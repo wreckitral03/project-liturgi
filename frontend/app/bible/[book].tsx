@@ -6,11 +6,22 @@ import {
   FlatList, 
   TouchableOpacity, 
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BookOpen } from 'lucide-react-native';
 import { useBible } from '@/hooks/useBible';
-import { COLORS } from '@/utils/theme';
+import { COLORS, FONTS } from '@/utils/theme';
+
+// Get screen width to calculate item size
+const { width } = Dimensions.get('window');
+const GRID_PADDING = 16;
+const GRID_SPACING = 8;
+const NUM_COLUMNS = 4;
+const ITEM_MARGIN = GRID_SPACING / 2;
+
+// Calculate item size based on screen width and grid configuration
+const ITEM_SIZE = (width - (GRID_PADDING * 2) - (GRID_SPACING * (NUM_COLUMNS - 1))) / NUM_COLUMNS;
 
 export default function BookScreen() {
   const { book } = useLocalSearchParams<{ book: string }>();
@@ -52,16 +63,18 @@ export default function BookScreen() {
           <FlatList
             data={bookDetails.chapters}
             keyExtractor={(item) => `chapter-${item}`}
-            numColumns={5}
+            numColumns={NUM_COLUMNS}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.chapterButton}
                 onPress={() => navigateToChapter(item)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.chapterText}>{item}</Text>
               </TouchableOpacity>
             )}
             contentContainerStyle={styles.chaptersContainer}
+            columnWrapperStyle={styles.row}
           />
         </>
       )}
@@ -80,7 +93,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: FONTS.body,
     fontSize: 16,
     color: COLORS.textMuted,
     marginTop: 16,
@@ -91,31 +104,34 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   bookTitle: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: FONTS.heading,
     fontSize: 24,
     color: COLORS.textMain,
     marginBottom: 4,
   },
   bookInfo: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: FONTS.body,
     fontSize: 14,
     color: COLORS.textMuted,
   },
   chaptersContainer: {
-    padding: 16,
+    padding: GRID_PADDING,
+  },
+  row: {
+    justifyContent: 'flex-start',
   },
   chapterButton: {
-    width: '20%',
-    aspectRatio: 1,
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: '#F5F5F5',
-    margin: '2%',
+    margin: ITEM_MARGIN,
   },
   chapterText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 16,
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 18,
     color: COLORS.textMain,
   },
 });
