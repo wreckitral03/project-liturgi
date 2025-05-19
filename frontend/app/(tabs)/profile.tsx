@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Platform, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Download, LogOut, ChevronRight, CircleCheck as CheckCircle, User as UserIcon } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useBible } from '@/hooks/useBible';
 import { COLORS } from '@/utils/theme';
@@ -69,69 +70,72 @@ export default function ProfileScreen() {
   };
   
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profil</Text>
-      </View>
-      
-      <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <UserIcon size={40} color={COLORS.primary} />
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>
-              {isAuthenticated ? user?.name || 'Pengguna' : 'Tamu'}
-            </Text>
-            <Text style={styles.profileEmail}>
-              {isAuthenticated ? user?.email || 'email@example.com' : 'Silahkan login untuk mengakses fitur tambahan'}
-            </Text>
-          </View>
+    <>
+      <StatusBar style="light" />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Profil</Text>
         </View>
         
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Alkitab Offline</Text>
-          <TouchableOpacity 
-            style={styles.downloadButton}
-            onPress={handleDownloadBible}
-            disabled={isBibleDownloaded || isDownloading}
-          >
-            <View style={styles.downloadButtonContent}>
-              {isBibleDownloaded ? (
-                <CheckCircle size={24} color={COLORS.success} />
-              ) : (
-                <Download size={24} color={isDownloading ? COLORS.textMuted : COLORS.primary} />
-              )}
-              <Text style={[
-                styles.downloadButtonText,
-                (isBibleDownloaded || isDownloading) && styles.downloadButtonTextDisabled
-              ]}>
-                {isBibleDownloaded 
-                  ? "Alkitab tersedia offline" 
-                  : isDownloading 
-                    ? "Mengunduh..." 
-                    : "Unduh Alkitab untuk Akses Offline"}
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <UserIcon size={40} color={COLORS.primary} />
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>
+                {isAuthenticated ? user?.name || 'Pengguna' : 'Tamu'}
+              </Text>
+              <Text style={styles.profileEmail}>
+                {isAuthenticated ? user?.email || 'email@example.com' : 'Silahkan login untuk mengakses fitur tambahan'}
               </Text>
             </View>
-            <ChevronRight size={18} color="#9E9E9E" />
-          </TouchableOpacity>
-        </View>
-        
-        {isAuthenticated && (
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <LogOut size={20} color={COLORS.error} />
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          </View>
+          
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Alkitab Offline</Text>
+            <TouchableOpacity 
+              style={styles.downloadButton}
+              onPress={handleDownloadBible}
+              disabled={isBibleDownloaded || isDownloading}
+            >
+              <View style={styles.downloadButtonContent}>
+                {isBibleDownloaded ? (
+                  <CheckCircle size={24} color={COLORS.success} />
+                ) : (
+                  <Download size={24} color={isDownloading ? COLORS.textMuted : COLORS.primary} />
+                )}
+                <Text style={[
+                  styles.downloadButtonText,
+                  (isBibleDownloaded || isDownloading) && styles.downloadButtonTextDisabled
+                ]}>
+                  {isBibleDownloaded 
+                    ? "Alkitab tersedia offline" 
+                    : isDownloading 
+                      ? "Mengunduh..." 
+                      : "Unduh Alkitab untuk Akses Offline"}
+                </Text>
+              </View>
+              <ChevronRight size={18} color="#9E9E9E" />
+            </TouchableOpacity>
+          </View>
+          
+          {isAuthenticated && (
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <LogOut size={20} color={COLORS.error} />
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 }
 

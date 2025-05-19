@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BookOpen } from 'lucide-react-native';
 import { useBible } from '@/hooks/useBible';
 import { COLORS, FONTS } from '@/utils/theme';
-
+  
 // Get screen width to calculate item size
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 16;

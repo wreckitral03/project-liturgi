@@ -38,12 +38,12 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <BibleProvider>
+        <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="auth" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
-        <StatusBar style="auto" />
       </BibleProvider>
     </AuthProvider>
   );

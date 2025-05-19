@@ -9,9 +9,17 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
-
-    
+      "supportsTablet": true,
+      "statusBar": {
+        "style": "light",
+        "backgroundColor": "#3F51B5"
+      }
+    },
+    "android": {
+      "statusBar": {
+        "backgroundColor": "#3F51B5",
+        "barStyle": "light-content"
+      }
     },
     "web": {
       "bundler": "metro",

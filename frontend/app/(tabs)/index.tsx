@@ -1,16 +1,16 @@
-import { useCallback, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  StatusBar,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Book, Calendar, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
 import DateNavigator from '@/components/ui/DateNavigator';
 import ReadingSection from '@/components/ui/ReadingSection';
 import { useReadings } from '@/hooks/useReadings';
@@ -34,81 +34,84 @@ export default function HomeScreen() {
   }, [router]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Liturgi Harian</Text>
-        <TouchableOpacity 
-          style={styles.bibleButton}
-          onPress={openBibleReader}
+    <>
+      <StatusBar style="light" />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Liturgi Harian</Text>
+          <TouchableOpacity 
+            style={styles.bibleButton}
+            onPress={openBibleReader}
+          >
+            <Book color="#FFF" size={24} />
+          </TouchableOpacity>
+        </View>
+        
+        <DateNavigator 
+          date={selectedDate} 
+          onDateChange={setSelectedDate} 
+        />
+        
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
         >
-          <Book color="#FFF" size={24} />
-        </TouchableOpacity>
-      </View>
-      
-      <DateNavigator 
-        date={selectedDate} 
-        onDateChange={setSelectedDate} 
-      />
-      
-      <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Memuat bacaan...</Text>
-          </View>
-        ) : (
-          <>
-            {readings?.firstReading && (
-              <ReadingSection
-                icon="📖"
-                title="Bacaan Pertama"
-                reference={readings.firstReading.reference}
-                content={readings.firstReading.content}
-              />
-            )}
-            
-            {readings?.psalm && (
-              <ReadingSection
-                icon="🎶"
-                title="Mazmur Tanggapan"
-                reference={readings.psalm.reference}
-                content={readings.psalm.content}
-              />
-            )}
-            
-            {readings?.secondReading && (
-              <ReadingSection
-                icon="📘"
-                title="Bacaan Kedua"
-                reference={readings.secondReading.reference}
-                content={readings.secondReading.content}
-              />
-            )}
-            
-            {readings?.gospel && (
-              <ReadingSection
-                icon="✝️"
-                title="Injil"
-                reference={readings.gospel.reference}
-                content={readings.gospel.content}
-              />
-            )}
-            
-            {!readings?.firstReading && !readings?.psalm && 
-             !readings?.secondReading && !readings?.gospel && (
-              <View style={styles.noReadingsContainer}>
-                <Text style={styles.noReadingsText}>
-                  Tidak ada bacaan untuk {formattedDate}
-                </Text>
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Memuat bacaan...</Text>
+            </View>
+          ) : (
+            <>
+              {readings?.firstReading && (
+                <ReadingSection
+                  icon="📖"
+                  title="Bacaan Pertama"
+                  reference={readings.firstReading.reference}
+                  content={readings.firstReading.content}
+                />
+              )}
+              
+              {readings?.psalm && (
+                <ReadingSection
+                  icon="🎶"
+                  title="Mazmur Tanggapan"
+                  reference={readings.psalm.reference}
+                  content={readings.psalm.content}
+                />
+              )}
+              
+              {readings?.secondReading && (
+                <ReadingSection
+                  icon="📘"
+                  title="Bacaan Kedua"
+                  reference={readings.secondReading.reference}
+                  content={readings.secondReading.content}
+                />
+              )}
+              
+              {readings?.gospel && (
+                <ReadingSection
+                  icon="✝️"
+                  title="Injil"
+                  reference={readings.gospel.reference}
+                  content={readings.gospel.content}
+                />
+              )}
+              
+              {!readings?.firstReading && !readings?.psalm && 
+               !readings?.secondReading && !readings?.gospel && (
+                <View style={styles.noReadingsContainer}>
+                  <Text style={styles.noReadingsText}>
+                    Tidak ada bacaan untuk {formattedDate}
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 }
 

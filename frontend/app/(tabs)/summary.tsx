@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Check, Info } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useSummary } from '@/hooks/useSummary';
 import AuthPrompt from '@/components/auth/AuthPrompt';
@@ -30,65 +31,68 @@ export default function SummaryScreen() {
   }
   
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Ringkasan & Aksi Harian</Text>
-      </View>
-      
-      <ScrollView 
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.dateContainer}>
-          <Text style={styles.dateText}>{formattedDate}</Text>
+    <>
+      <StatusBar style="light" />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Ringkasan & Aksi Harian</Text>
         </View>
-
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Memuat ringkasan...</Text>
+        
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
-        ) : (
-          <>
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryHeader}>
-                <Text style={styles.summaryTitle}>Ringkasan Spiritual</Text>
-                <Info size={18} color={COLORS.textMuted} />
+
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Memuat ringkasan...</Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.summaryCard}>
+                <View style={styles.summaryHeader}>
+                  <Text style={styles.summaryTitle}>Ringkasan Spiritual</Text>
+                  <Info size={18} color={COLORS.textMuted} />
+                </View>
+                <Text style={styles.summaryText}>{summary}</Text>
               </View>
-              <Text style={styles.summaryText}>{summary}</Text>
-            </View>
-            
-            <View style={styles.checklistContainer}>
-              <Text style={styles.checklistTitle}>Aksi Harian</Text>
               
-              {checklistItems.map((item, index) => (
-                <TouchableOpacity 
-                  key={index}
-                  style={styles.checklistItem}
-                  onPress={() => toggleChecklistItem(index)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[
-                    styles.checkbox,
-                    item.completed && styles.checkboxCompleted
-                  ]}>
-                    {item.completed && (
-                      <Check size={16} color="#FFF" />
-                    )}
-                  </View>
-                  <Text style={[
-                    styles.checklistText,
-                    item.completed && styles.checklistTextCompleted
-                  ]}>
-                    {item.text}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+              <View style={styles.checklistContainer}>
+                <Text style={styles.checklistTitle}>Aksi Harian</Text>
+                
+                {checklistItems.map((item, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    style={styles.checklistItem}
+                    onPress={() => toggleChecklistItem(index)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      item.completed && styles.checkboxCompleted
+                    ]}>
+                      {item.completed && (
+                        <Check size={16} color="#FFF" />
+                      )}
+                    </View>
+                    <Text style={[
+                      styles.checklistText,
+                      item.completed && styles.checklistTextCompleted
+                    ]}>
+                      {item.text}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 }
 

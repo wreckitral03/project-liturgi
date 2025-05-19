@@ -8,11 +8,11 @@ import {
   TouchableOpacity, 
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useAIAssistant } from '@/hooks/useAIAssistant';
 import AuthPrompt from '@/components/auth/AuthPrompt';
@@ -56,71 +56,74 @@ export default function ChatScreen() {
   };
   
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>AI Verse Assistant</Text>
-      </View>
-      
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <ScrollView 
-          style={styles.chatContainer}
-          contentContainerStyle={styles.chatContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {dailyTokenUsed && (
-            <View style={styles.limitBanner}>
-              <Text style={styles.limitText}>
-                Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
-              </Text>
-            </View>
-          )}
-          
-          {chatHistory.length === 0 ? (
-            <View style={styles.emptyChat}>
-              <Text style={styles.emptyChatTitle}>
-                Selamat datang di AI Verse Assistant
-              </Text>
-              <Text style={styles.emptyChatDescription}>
-                Bagikan perasaan atau situasi yang kamu alami, dan AI akan memberikan ayat yang sesuai untuk menguatkan kamu.
-              </Text>
-            </View>
-          ) : (
-            chatHistory.map((message, index) => (
-              <ChatMessage 
-                key={index}
-                message={message}
-                isLast={index === chatHistory.length - 1}
-              />
-            ))
-          )}
-        </ScrollView>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Bagaimana kondisi kamu hari ini?"
-            placeholderTextColor="#9E9E9E"
-            value={userInput}
-            onChangeText={setUserInput}
-            multiline
-          />
-          <TouchableOpacity 
-            style={[
-              styles.sendButton,
-              (!userInput.trim() || isLoading) && styles.sendButtonDisabled
-            ]}
-            onPress={handleSend}
-            disabled={!userInput.trim() || isLoading}
-          >
-            <Send color="#FFF" size={20} />
-          </TouchableOpacity>
+    <>
+      <StatusBar style="light" />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>AI Verse Assistant</Text>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+          <ScrollView 
+            style={styles.chatContainer}
+            contentContainerStyle={styles.chatContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {dailyTokenUsed && (
+              <View style={styles.limitBanner}>
+                <Text style={styles.limitText}>
+                  Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
+                </Text>
+              </View>
+            )}
+            
+            {chatHistory.length === 0 ? (
+              <View style={styles.emptyChat}>
+                <Text style={styles.emptyChatTitle}>
+                  Selamat datang di AI Verse Assistant
+                </Text>
+                <Text style={styles.emptyChatDescription}>
+                  Bagikan perasaan atau situasi yang kamu alami, dan AI akan memberikan ayat yang sesuai untuk menguatkan kamu.
+                </Text>
+              </View>
+            ) : (
+              chatHistory.map((message, index) => (
+                <ChatMessage 
+                  key={index}
+                  message={message}
+                  isLast={index === chatHistory.length - 1}
+                />
+              ))
+            )}
+          </ScrollView>
+          
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Bagaimana kondisi kamu hari ini?"
+              placeholderTextColor="#9E9E9E"
+              value={userInput}
+              onChangeText={setUserInput}
+              multiline
+            />
+            <TouchableOpacity 
+              style={[
+                styles.sendButton,
+                (!userInput.trim() || isLoading) && styles.sendButtonDisabled
+              ]}
+              onPress={handleSend}
+              disabled={!userInput.trim() || isLoading}
+            >
+              <Send color="#FFF" size={20} />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
   );
 }
 
