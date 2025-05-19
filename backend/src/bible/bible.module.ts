@@ -8,3 +8,4 @@ import { BibleService } from './bible.service';
   providers: [BibleService],
 })
 export class BibleModule {}
+

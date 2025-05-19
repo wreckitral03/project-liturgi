@@ -31,3 +31,14 @@ enum Role {
   FREE
   CONTRIBUTOR
 }
+
+model Verse {
+  id        Int     @id @default(autoincrement())
+  book      String
+  chapter   Int
+  verse     Int
+  text      String
+
+  @@index([book, chapter, verse])
+  @@unique([book, chapter, verse])
+}
