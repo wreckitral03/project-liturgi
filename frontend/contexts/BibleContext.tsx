@@ -1,12 +1,14 @@
+import axios from 'axios';
 import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import {
-  mockGetBibleBooks,
-  mockGetBookDetails,
-  mockGetChapterContent,
   mockSearchBible,
   mockDownloadBible,
   mockIsBibleDownloaded
 } from '@/utils/mockApi';
+import { getBibleBooks } from '@/utils/api';
+import { Book } from '@/types/bible';
+
+//  mockGetBibleBooks, (takeout)
 
 interface BibleContextType {
   books: any[];
@@ -37,8 +39,7 @@ interface BibleProviderProps {
 }
 
 export function BibleProvider({ children }: BibleProviderProps) {
-  const [books, setBooks] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);  const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isBibleDownloaded, setIsBibleDownloaded] = useState(false);
@@ -48,9 +49,11 @@ export function BibleProvider({ children }: BibleProviderProps) {
     const loadBibleData = async () => {
       setIsLoading(true);
       try {
-        const booksData = await mockGetBibleBooks();
+        const booksData = await getBibleBooks();
         setBooks(booksData);
-        
+        console.log('Books loaded from API:', booksData);
+
+
         const downloaded = await mockIsBibleDownloaded();
         setIsBibleDownloaded(downloaded);
       } catch (error) {
@@ -67,8 +70,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
   const getBookDetails = useCallback(async (bookId: string) => {
     setIsLoading(true);
     try {
-      const bookDetails = await mockGetBookDetails(bookId);
-      return bookDetails;
+      const response = await axios.get(`/bible/${bookId}/1`);
+      return response.data;
     } catch (error) {
       console.error('Error loading book details:', error);
       throw error;
@@ -81,8 +84,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
   const getChapterContent = useCallback(async (bookId: string, chapter: number) => {
     setIsLoading(true);
     try {
-      const chapterContent = await mockGetChapterContent(bookId, chapter);
-      return chapterContent;
+      const response = await axios.get(`/bible/${bookId}/${chapter}`);
+      return response.data;
     } catch (error) {
       console.error('Error loading chapter content:', error);
       throw error;
