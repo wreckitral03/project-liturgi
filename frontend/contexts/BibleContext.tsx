@@ -1,14 +1,11 @@
-import axios from 'axios';
 import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import {
-  mockSearchBible,
-  mockDownloadBible,
-  mockIsBibleDownloaded
-} from '@/utils/mockApi';
-import { getBibleBooks } from '@/utils/api';
-import { Book } from '@/types/bible';
-
-//  mockGetBibleBooks, (takeout)
+  getBibleBooks,
+  getBookDetails as fetchBookDetails,
+  getChapterContent as fetchChapterContent,
+  searchBible as fetchSearchBible,
+  exportBible,
+} from '@/utils/api';
 
 interface BibleContextType {
   books: any[];
@@ -39,7 +36,8 @@ interface BibleProviderProps {
 }
 
 export function BibleProvider({ children }: BibleProviderProps) {
-  const [books, setBooks] = useState<Book[]>([]);  const [isLoading, setIsLoading] = useState(false);
+  const [books, setBooks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isBibleDownloaded, setIsBibleDownloaded] = useState(false);
@@ -51,11 +49,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
       try {
         const booksData = await getBibleBooks();
         setBooks(booksData);
-        console.log('Books loaded from API:', booksData);
-
-
-        const downloaded = await mockIsBibleDownloaded();
-        setIsBibleDownloaded(downloaded);
+        
+        setIsBibleDownloaded(true);
       } catch (error) {
         console.error('Error loading Bible data:', error);
       } finally {
@@ -70,8 +65,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
   const getBookDetails = useCallback(async (bookId: string) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`/bible/${bookId}/1`);
-      return response.data;
+      const bookDetails = await fetchBookDetails(bookId);
+      return bookDetails;
     } catch (error) {
       console.error('Error loading book details:', error);
       throw error;
@@ -84,8 +79,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
   const getChapterContent = useCallback(async (bookId: string, chapter: number) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`/bible/${bookId}/${chapter}`);
-      return response.data;
+      const chapterContent = await fetchChapterContent(bookId, chapter);
+      return chapterContent;
     } catch (error) {
       console.error('Error loading chapter content:', error);
       throw error;
@@ -98,7 +93,7 @@ export function BibleProvider({ children }: BibleProviderProps) {
   const searchBible = useCallback(async (query: string) => {
     setIsSearching(true);
     try {
-      const results = await mockSearchBible(query);
+      const results = await fetchSearchBible(query);
       return results;
     } catch (error) {
       console.error('Error searching Bible:', error);
@@ -114,7 +109,8 @@ export function BibleProvider({ children }: BibleProviderProps) {
     
     setIsDownloading(true);
     try {
-      await mockDownloadBible();
+      const fullData = await exportBible();
+      console.log('[BibleContext] Downloaded Bible:', fullData);
       setIsBibleDownloaded(true);
     } catch (error) {
       console.error('Error downloading Bible:', error);

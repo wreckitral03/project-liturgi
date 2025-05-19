@@ -1,4 +1,11 @@
+function getAbbrFromName(name: string): string | undefined {
+  return booksCanon.find((b) => b.name === name)?.abbr;
+}
+function getAbbrFromId(id: number): string | undefined {
+  return booksCanon[id - 1]?.abbr;
+}
 const booksCanon = [
+
   { name: 'Kejadian', abbr: 'Kej' },
   { name: 'Keluaran', abbr: 'Kel' },
   { name: 'Imamat', abbr: 'Ima' },
@@ -112,18 +119,29 @@ export class BibleService {
       }));
   }
 
-  async getChapter(abbr: string, chapter: number) {
+  async getChapter(bookId: string, chapter: number) {
+    const id = parseInt(bookId, 10);
+    const abbr = getAbbrFromId(id);
     const found = booksCanon.find((b) => b.abbr === abbr);
-    if (!found) throw new Error(`Unknown book abbreviation: ${abbr}`);
+    if (!found) throw new Error(`Unknown book ID: ${bookId}`);
 
-    return this.prisma.verse.findMany({
+    const verses = await this.prisma.verse.findMany({
       where: { book: found.name, chapter },
       orderBy: { verse: 'asc' },
     });
+
+    return {
+      book: found.name,
+      chapter,
+      verses: verses.map(v => ({
+        number: v.verse,
+        text: v.text,
+      })),
+    };
   }
 
   async search(query: string) {
-    return this.prisma.verse.findMany({
+    const results = await this.prisma.verse.findMany({
       where: {
         text: {
           contains: query,
@@ -132,5 +150,32 @@ export class BibleService {
       },
       orderBy: [{ book: 'asc' }, { chapter: 'asc' }, { verse: 'asc' }],
     });
+
+    return results.map((v) => ({
+      ...v,
+      abbr: getAbbrFromName(v.book) || '',
+    }));
+  }
+  async getBooksNumber(bookId: string) {
+    const id = parseInt(bookId, 10);
+    const abbr = getAbbrFromId(id);
+    const found = booksCanon.find((b) => b.abbr === abbr);
+    if (!found) throw new Error(`Unknown book ID: ${bookId}`);
+
+    const result = await this.prisma.verse.aggregate({
+      _max: {
+        chapter: true,
+      },
+      where: {
+        book: found.name,
+      },
+    });
+
+    const totalChapters = result._max.chapter || 0;
+    return {
+      id,
+      name: found.name,
+      chapters: Array.from({ length: totalChapters }, (_, i) => i + 1),
+    };
   }
 }

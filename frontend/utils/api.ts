@@ -1,25 +1,33 @@
 import axios from 'axios';
 
-// Use dynamic base URL from environment variable
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE || 'http://localhost:3000';
 
 export const getBibleBooks = async () => {
-  try {
-    const res = await axios.get(`${API_BASE}/bible/books`);
-    return res.data;
-  } catch (err) {
-    console.error('Error fetching Bible books:', err);
-    return []; // Return empty array on failure
-  }
+  const res = await axios.get(`${API_BASE}/bible`);
+  return res.data;
 };
 
-// abbr: the abbreviation of the Bible book
-export const getChapterContent = async (abbr: string, chapter: number) => {
-  try {
-    const res = await axios.get(`${API_BASE}/bible/${abbr}/${chapter}`);
-    return res.data;
-  } catch (err) {
-    console.error(`Error fetching chapter ${chapter} from book ${abbr}:`, err);
-    return null;
-  }
+export const getBookDetails = async (bookId: string) => {
+  const res = await axios.get(`${API_BASE}/bible/${bookId}`);
+  return res.data;
+};
+
+export const getChapterContent = async (bookId: string, chapter: number) => {
+  const res = await axios.get(`${API_BASE}/bible/${bookId}/${chapter}`);
+  return res.data;
+};
+
+export const searchBible = async (query: string) => {
+  const res = await axios.get(`${API_BASE}/bible/search?q=${encodeURIComponent(query)}`);
+  return res.data;
+};
+
+export const exportBible = async () => {
+  const res = await axios.get(`${API_BASE}/bible/export`);
+  return res.data;
+};
+
+export const seedBible = async (verses: Array<{ book: string; chapter: number; verse: number; text: string }>) => {
+  const res = await axios.post(`${API_BASE}/bible/seed`, verses);
+  return res.data;
 };
