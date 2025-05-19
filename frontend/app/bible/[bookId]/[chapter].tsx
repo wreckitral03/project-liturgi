@@ -16,7 +16,7 @@ import { useBible } from '@/hooks/useBible';
 import { COLORS, FONTS } from '@/utils/theme';
 
 export default function ChapterScreen() {
-  const { book, chapter } = useLocalSearchParams<{ book: string, chapter: string }>();
+  const { bookId, chapter } = useLocalSearchParams<{ bookId: string, chapter: string }>();
   const router = useRouter();
   const { getChapterContent, getBookDetails, isLoading } = useBible();
   const [chapterContent, setChapterContent] = useState<any>(null);
@@ -26,20 +26,30 @@ export default function ChapterScreen() {
   
   useEffect(() => {
     const loadChapterContent = async () => {
-      if (book && chapter) {
-        const content = await getChapterContent(book, parseInt(chapter));
-        setChapterContent(content);
-        
-        const details = await getBookDetails(book);
-        setBookDetails(details);
+      console.log('[DEBUG] bookId:', bookId, 'chapter:', chapter);
+
+      if (bookId && chapter) {
+        try {
+          const content = await getChapterContent(bookId, parseInt(chapter));
+          console.log('[DEBUG] chapterContent:', content);
+          setChapterContent(content);
+
+          const details = await getBookDetails(bookId);
+          console.log('[DEBUG] bookDetails:', details);
+          setBookDetails(details);
+        } catch (err) {
+          console.error('[ERROR] Failed to load content or details:', err);
+        }
+      } else {
+        console.warn('[WARN] Missing bookId or chapter');
       }
     };
-    
+
     loadChapterContent();
-  }, [book, chapter, getChapterContent, getBookDetails]);
+  }, [bookId, chapter, getChapterContent, getBookDetails]);
   
   const navigateToChapter = (chapterNumber: number) => {
-    router.push(`/bible/${book}/${chapterNumber}`);
+    router.push(`/bible/${bookId}/${chapterNumber}`);
     // Scroll to top when navigating
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
@@ -82,7 +92,7 @@ export default function ChapterScreen() {
           <Animated.FlatList
             ref={flatListRef}
             data={chapterContent.verses}
-            keyExtractor={(item) => `verse-${item.number}`}
+            keyExtractor={(item, index) => `verse-${item.number}-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.verseContainer}

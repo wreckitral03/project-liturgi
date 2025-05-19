@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE || 'http://localhost:3000';
+import { Platform } from 'react-native';
+
+const localIP = 'http://192.168.1.100:3000'; // ← Replace with your Mac’s IP
+const API_BASE = Platform.OS === 'ios' || Platform.OS === 'android'
+  ? localIP
+  : 'http://localhost:3000';
 
 export const getBibleBooks = async () => {
   const res = await axios.get(`${API_BASE}/bible`);

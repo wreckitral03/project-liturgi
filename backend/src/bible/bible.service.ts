@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 function getAbbrFromName(name: string): string | undefined {
   return booksCanon.find((b) => b.name === name)?.abbr;
 }
@@ -121,9 +122,14 @@ export class BibleService {
 
   async getChapter(bookId: string, chapter: number) {
     const id = parseInt(bookId, 10);
+    if (isNaN(id)) {
+      throw new BadRequestException(`Invalid book ID: ${bookId}`);
+    }
     const abbr = getAbbrFromId(id);
     const found = booksCanon.find((b) => b.abbr === abbr);
-    if (!found) throw new Error(`Unknown book ID: ${bookId}`);
+    if (!found) {
+      throw new BadRequestException(`Unknown book ID: ${bookId}`);
+    }
 
     const verses = await this.prisma.verse.findMany({
       where: { book: found.name, chapter },
@@ -151,10 +157,19 @@ export class BibleService {
       orderBy: [{ book: 'asc' }, { chapter: 'asc' }, { verse: 'asc' }],
     });
 
-    return results.map((v) => ({
-      ...v,
-      abbr: getAbbrFromName(v.book) || '',
-    }));
+    return results.map((v) => {
+      const abbr = getAbbrFromName(v.book) || '';
+      const bookId = booksCanon.findIndex((b) => b.abbr === abbr) + 1;
+
+      const { book, ...rest } = v;
+
+      return {
+        ...rest,
+        bookName: book,
+        abbr,
+        bookId,
+      };
+    });
   }
   async getBooksNumber(bookId: string) {
     const id = parseInt(bookId, 10);

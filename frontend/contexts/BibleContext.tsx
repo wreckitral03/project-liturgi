@@ -77,6 +77,7 @@ export function BibleProvider({ children }: BibleProviderProps) {
   
   // Get chapter content
   const getChapterContent = useCallback(async (bookId: string, chapter: number) => {
+    console.log('[BibleContext] getChapterContent ->', { bookId, chapter });
     setIsLoading(true);
     try {
       const chapterContent = await fetchChapterContent(bookId, chapter);

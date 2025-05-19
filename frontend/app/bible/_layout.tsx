@@ -30,8 +30,8 @@ export default function BibleLayout() {
           }}
         >
           <Stack.Screen name="index" />
-          <Stack.Screen name="[book]" />
-          <Stack.Screen name="[book]/[chapter]" />
+          <Stack.Screen name="[bookId]" />
+          <Stack.Screen name="[bookId]/[chapter]" />
           <Stack.Screen name="search" />
         </Stack>
       </SafeAreaView>

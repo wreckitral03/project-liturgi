@@ -24,24 +24,24 @@ const ITEM_MARGIN = GRID_SPACING / 2;
 const ITEM_SIZE = (width - (GRID_PADDING * 2) - (GRID_SPACING * (NUM_COLUMNS - 1))) / NUM_COLUMNS;
 
 export default function BookScreen() {
-  const { book } = useLocalSearchParams<{ book: string }>();
+  const { bookId } = useLocalSearchParams<{ bookId: string }>();
   const router = useRouter();
   const { getBookDetails, isLoading } = useBible();
   const [bookDetails, setBookDetails] = useState<any>(null);
   
   useEffect(() => {
     const loadBookDetails = async () => {
-      if (book) {
-        const details = await getBookDetails(book);
+      if (bookId) {
+        const details = await getBookDetails(bookId);
         setBookDetails(details);
       }
     };
     
     loadBookDetails();
-  }, [book, getBookDetails]);
+  }, [bookId, getBookDetails]);
   
   const navigateToChapter = (chapterNumber: number) => {
-    router.push(`/bible/${book}/${chapterNumber}`);
+    router.push(`/bible/${bookId}/${chapterNumber}`);
   };
   
   return (
