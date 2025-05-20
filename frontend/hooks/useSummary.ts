@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { mockGetDailySummary } from '@/utils/mockApi';
+import { getDailySummary } from '@/utils/api';
 
 export function useSummary(date: Date) {
   const [summary, setSummary] = useState('');
@@ -9,10 +9,13 @@ export function useSummary(date: Date) {
   
   useEffect(() => {
     const fetchSummary = async () => {
+      console.log('fetchSummary called');
       setIsLoading(true);
       try {
         const formattedDate = format(date, 'yyyy-MM-dd');
-        const data = await mockGetDailySummary(formattedDate);
+        console.log('📅 Calling getDailySummary with:', formattedDate);
+        const data = await getDailySummary(formattedDate);
+        console.log('✅ Received summary data:', data);
         setSummary(data.summary);
         setChecklistItems(data.checklist);
       } catch (error) {

@@ -1,6 +1,6 @@
 // This file contains mock API functions to simulate backend interactions
 
-// Mock login function
+// 1. Mock login function
 export const mockLogin = async (email: string, password: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -19,7 +19,7 @@ export const mockLogin = async (email: string, password: string): Promise<any> =
   };
 };
 
-// Mock register function
+//2. Mock register function
 export const mockRegister = async (name: string, email: string, password: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -38,7 +38,7 @@ export const mockRegister = async (name: string, email: string, password: string
   };
 };
 
-// Mock function to get daily readings
+//3. Mock function to get daily readings
 export const mockGetDailyReadings = async (dateStr: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -65,7 +65,7 @@ export const mockGetDailyReadings = async (dateStr: string): Promise<any> => {
   };
 };
 
-// Mock function to get daily summary
+//4. Mock function to get daily summary
 export const mockGetDailySummary = async (dateStr: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 800));
@@ -84,7 +84,7 @@ export const mockGetDailySummary = async (dateStr: string): Promise<any> => {
   };
 };
 
-// Mock function to get AI response
+//5. Mock function to get AI response
 export const mockGetAIResponse = async (message: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1500));
@@ -100,7 +100,7 @@ export const mockGetAIResponse = async (message: string): Promise<any> => {
   };
 };
 
-// Mock function to get AI chat history
+//6. Mock function to get AI chat history
 export const mockGetAIHistory = async (): Promise<any[]> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -109,7 +109,7 @@ export const mockGetAIHistory = async (): Promise<any[]> => {
   return [];
 };
 
-// Mock Bible-related functions
+//7. Mock Bible-related functions
 
 // Get Bible books
 export const mockGetBibleBooks = async (): Promise<any[]> => {

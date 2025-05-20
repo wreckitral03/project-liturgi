@@ -42,3 +42,23 @@ model Verse {
   @@index([book, chapter, verse])
   @@unique([book, chapter, verse])
 }
+
+model Reading {
+  date           String   @id
+  firstReference String
+  firstContent   String
+  psalmReference String
+  psalmContent   String
+  secondReference String?
+  secondContent   String?
+  gospelReference String
+  gospelContent   String
+}
+
+model Summary {
+  id        String   @id @default(cuid())
+  date      String   @unique
+  summary   String
+  checklist Json
+  createdAt DateTime @default(now())
+}

@@ -38,29 +38,26 @@ export const seedBible = async (verses: Array<{ book: string; chapter: number; v
 };
 
 
-// Mock function to get daily readings
+
+// Get daily readings
+// This function fetches the daily readings from the API
+// It takes a date string as an argument and returns the readings for that date
+// The date string should be in the format 'YYYY-MM-DD'
+// The function uses axios to make a GET request to the API endpoint
+// The API endpoint is constructed using the base URL and the date string
+// The function returns the data received from the API
+// The API endpoint is '/readings/daily?date={dateStr}'
+// The dateStr parameter is passed as a query parameter in the URL
+// The function is asynchronous and returns a Promise
 export const getDailyReadings = async (dateStr: string): Promise<any> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Return mock readings data
-  return {
-    date: dateStr,
-    firstReading: {
-      reference: 'Kisah Para Rasul 1:1-11',
-      content: 'Dalam bukuku yang pertama, hai Teofilus, aku menulis tentang segala sesuatu yang dikerjakan dan diajarkan Yesus, sampai pada hari Ia terangkat. Sebelum itu Ia telah memberi perintah-Nya oleh Roh Kudus kepada rasul-rasul yang dipilih-Nya. Kepada mereka Ia menunjukkan diri-Nya setelah penderitaan-Nya selesai, dan dengan banyak tanda Ia membuktikan, bahwa Ia hidup. Sebab selama empat puluh hari Ia berulang-ulang menampakkan diri dan berbicara kepada mereka tentang Kerajaan Allah.'
-    },
-    psalm: {
-      reference: 'Mazmur 47:2-3, 6-7, 8-9',
-      content: 'Hai segala bangsa, bertepuktanganlah, elu-elukanlah Allah dengan sorak-sorai! Sebab TUHAN, Yang Mahatinggi, adalah dahsyat, Raja yang besar atas seluruh bumi. Allah naik dengan diiringi sorak-sorai, ya TUHAN itu, dengan diiringi bunyi sangkakala. Bermazmurlah bagi Allah, bermazmurlah, bermazmurlah bagi Raja kita, bermazmurlah!'
-    },
-    secondReading: {
-      reference: 'Efesus 1:17-23',
-      content: 'Aku berdoa supaya Allah Tuhan kita Yesus Kristus, yaitu Bapa yang mulia itu, memberikan kepadamu Roh hikmat dan wahyu untuk mengenal Dia dengan benar. Dan supaya Ia menjadikan mata hatimu terang, agar kamu mengerti pengharapan apakah yang terkandung dalam panggilan-Nya: betapa kayanya kemuliaan bagian yang ditentukan-Nya bagi orang-orang kudus.'
-    },
-    gospel: {
-      reference: 'Matius 28:16-20',
-      content: 'Dan kesebelas murid itu pergi ke Galilea, ke bukit yang telah ditunjukkan Yesus kepada mereka. Ketika melihat Dia mereka menyembah-Nya, tetapi beberapa orang ragu-ragu. Yesus mendekati mereka dan berkata: "Kepada-Ku telah diberikan segala kuasa di sorga dan di bumi. Karena itu pergilah, jadikanlah semua bangsa murid-Ku dan baptislah mereka dalam nama Bapa dan Anak dan Roh Kudus, dan ajarlah mereka melakukan segala sesuatu yang telah Kuperintahkan kepadamu. Dan ketahuilah, Aku menyertai kamu senantiasa sampai kepada akhir zaman."'
-    }
-  };
+  const res = await axios.get(`${API_BASE}/readings/daily?date=${dateStr}`);
+  return res.data;
+};
+
+
+
+//4. Mock function to get daily summary
+export const getDailySummary = async (dateStr: string): Promise<any> => {
+  const res = await axios.get(`${API_BASE}/summary/daily?date=${dateStr}`);
+  return res.data;
 };
