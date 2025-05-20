@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockGetDailyReadings } from '@/utils/mockApi';
+import { getDailyReadings } from '@/utils/api';
 import { format } from 'date-fns';
 
 export function useReadings(date: Date) {
@@ -11,7 +11,7 @@ export function useReadings(date: Date) {
       setIsLoading(true);
       try {
         const formattedDate = format(date, 'yyyy-MM-dd');
-        const data = await mockGetDailyReadings(formattedDate);
+        const data = await getDailyReadings(formattedDate);
         setReadings(data);
       } catch (error) {
         console.error('Error fetching readings:', error);
