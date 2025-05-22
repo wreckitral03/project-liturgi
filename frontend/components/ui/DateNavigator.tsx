@@ -145,10 +145,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFF',
-    paddingHorizontal: 16,
+    paddingHorizontal: 16,   // <-- This is the left and right space inside the box
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    marginBottom: 4,
   },
   navButton: {
     width: 40,

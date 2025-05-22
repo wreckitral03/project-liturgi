@@ -51,22 +51,25 @@ export default function HomeScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <DateNavigator 
-            date={selectedDate} 
-            onDateChange={setSelectedDate} 
-          />
+          <View style={{ marginBottom: 8 }}>
+            <DateNavigator 
+              date={selectedDate} 
+              onDateChange={setSelectedDate} 
+            />
+          </View>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>Memuat bacaan...</Text>
             </View>
           ) : (
-            <>
+            <View style={styles.readingsContainer}>
               {readings?.firstReading && (
                 <ReadingSection
                   icon="📖"
                   title="Bacaan Pertama"
                   reference={readings.firstReading.reference}
                   content={readings.firstReading.content}
+                  isFirst
                 />
               )}
               
@@ -105,7 +108,7 @@ export default function HomeScreen() {
                   </Text>
                 </View>
               )}
-            </>
+            </View>
           )}
         </ScrollView>
       </SafeAreaView>
@@ -148,8 +151,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    padding: 16,
+    paddingTop: 0,
+    paddingHorizontal: 0,
     paddingBottom: 32,
+  },
+  readingsContainer: {
+    paddingHorizontal: 8, // no horizontal padding here since parent already has padding
   },
   loadingContainer: {
     padding: 20,

@@ -8,9 +8,10 @@ interface ReadingSectionProps {
   title: string;
   reference: string;
   content: string;
+  isFirst?: boolean;
 }
 
-export default function ReadingSection({ icon, title, reference, content }: ReadingSectionProps) {
+export default function ReadingSection({ icon, title, reference, content, isFirst }: ReadingSectionProps) {
   const [expanded, setExpanded] = useState(false);
   
   const toggleExpanded = () => {
@@ -18,7 +19,7 @@ export default function ReadingSection({ icon, title, reference, content }: Read
   };
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isFirst && { marginTop: 0 }]}>
       <View style={styles.header}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>{icon}</Text>
@@ -48,7 +49,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFF',
     borderRadius: 12,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 0,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

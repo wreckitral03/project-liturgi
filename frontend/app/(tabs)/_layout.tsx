@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Platform, StyleSheet } from 'react-native';
-import { Chrome as Home, FileText, MessageSquare, User } from 'lucide-react-native';
+import { House as Home, FileText, MessageSquare, User } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { COLORS } from '@/utils/theme';
 
@@ -21,7 +21,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Liturgi Harian",
+            title: "Home",
             tabBarIcon: ({ color, size }) => (
               <Home color={color} size={size} />
             ),
