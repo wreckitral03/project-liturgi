@@ -41,7 +41,6 @@ export default function ChatScreen() {
   
   const handleSend = () => {
     if (!userInput.trim()) return;
-    
     if (dailyTokenUsed) {
       Alert.alert(
         "Batas Harian Tercapai",
@@ -50,55 +49,62 @@ export default function ChatScreen() {
       );
       return;
     }
-    
     sendMessage(userInput);
     setUserInput('');
   };
-  
+
   return (
     <>
-      <StatusBar style="light" />
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>AI Verse Assistant</Text>
-        </View>
-        
-        <KeyboardAvoidingView
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
+      <StatusBar style="light" backgroundColor={COLORS.primary} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <SafeAreaView style={{ backgroundColor: COLORS.primary, flex: 1 }} edges={['top']}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>AI Verse Assistant</Text>
+          </View>
+          
           <ScrollView 
             style={styles.chatContainer}
             contentContainerStyle={styles.chatContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {dailyTokenUsed && (
+            {/* Encouragement or Limit Banner */}
+            {dailyTokenUsed ? (
               <View style={styles.limitBanner}>
                 <Text style={styles.limitText}>
                   Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
                 </Text>
               </View>
-            )}
-            
-            {chatHistory.length === 0 ? (
+            ) : (
               <View style={styles.emptyChat}>
-                <Text style={styles.emptyChatTitle}>
-                  Selamat datang di AI Verse Assistant
-                </Text>
                 <Text style={styles.emptyChatDescription}>
                   Bagikan perasaan atau situasi yang kamu alami, dan AI akan memberikan ayat yang sesuai untuk menguatkan kamu.
                 </Text>
               </View>
-            ) : (
-              chatHistory.map((message, index) => (
+            )}
+
+            {/* Chat History */}
+            {chatHistory.length === 0 && !dailyTokenUsed && (
+              <View style={styles.emptyChat}>
+                <Text style={styles.emptyChatTitle}>
+                  Selamat datang di AI Verse Assistant
+                </Text>
+              </View>
+            )}
+
+            {/* Show chat messages always below banner with extra top margin */}
+            {chatHistory.map((message, index) => (
+              <View key={index} style={index === 0 ? { marginTop: 16 } : undefined}>
                 <ChatMessage 
-                  key={index}
                   message={message}
                   isLast={index === chatHistory.length - 1}
                 />
-              ))
-            )}
+              </View>
+            ))}
           </ScrollView>
           
           <View style={styles.inputContainer}>
@@ -121,19 +127,22 @@ export default function ChatScreen() {
               <Send color="#FFF" size={20} />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.primary, // Makes header color match status bar
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...Platform.select({
@@ -147,11 +156,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Inter-Bold',
   },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   chatContainer: {
     flex: 1,
+    backgroundColor: COLORS.background, // Ensures rest of page is not blue
   },
   chatContent: {
     padding: 16,
@@ -175,6 +182,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     marginTop: 16,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,

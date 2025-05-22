@@ -9,24 +9,31 @@ import { COLORS } from '@/utils/theme';
 export default function ProfileScreen() {
   const { isAuthenticated, user, logout } = useAuth();
   const { isBibleDownloaded, downloadBible, isDownloading } = useBible();
-  
+
   const handleLogout = () => {
+    console.log('HANDLE LOGOUT CLICKED');
     Alert.alert(
       "Konfirmasi Logout",
       "Apakah anda yakin ingin keluar?",
       [
+        { text: "Batal", style: "cancel" },
         {
-          text: "Batal",
-          style: "cancel"
-        },
-        { 
-          text: "Logout", 
-          onPress: () => logout()
+          text: "Logout",
+          onPress: () => {
+            console.log('ALERT LOGOUT CONFIRMED');
+            doLogout();
+          }
         }
       ]
     );
   };
-  
+
+  const doLogout = async () => {
+    console.log('DO LOGOUT CALLED');
+    await logout();
+    Alert.alert("Sukses", "Anda telah keluar.");
+  };
+
   const handleDownloadBible = async () => {
     if (!isBibleDownloaded && !isDownloading) {
       try {
@@ -38,8 +45,8 @@ export default function ProfileScreen() {
               text: "Batal",
               style: "cancel"
             },
-            { 
-              text: "Unduh", 
+            {
+              text: "Unduh",
               onPress: async () => {
                 try {
                   await downloadBible();
@@ -68,16 +75,16 @@ export default function ProfileScreen() {
       }
     }
   };
-  
+
   return (
     <>
-      <StatusBar style="light" />
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar style="light" backgroundColor={COLORS.primary} />
+      <SafeAreaView style={{ backgroundColor: COLORS.primary, flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profil</Text>
         </View>
-        
-        <ScrollView 
+
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
@@ -95,10 +102,10 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          
+
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Alkitab Offline</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.downloadButton}
               onPress={handleDownloadBible}
               disabled={isBibleDownloaded || isDownloading}
@@ -113,19 +120,19 @@ export default function ProfileScreen() {
                   styles.downloadButtonText,
                   (isBibleDownloaded || isDownloading) && styles.downloadButtonTextDisabled
                 ]}>
-                  {isBibleDownloaded 
-                    ? "Alkitab tersedia offline" 
-                    : isDownloading 
-                      ? "Mengunduh..." 
+                  {isBibleDownloaded
+                    ? "Alkitab tersedia offline"
+                    : isDownloading
+                      ? "Mengunduh..."
                       : "Unduh Alkitab untuk Akses Offline"}
                 </Text>
               </View>
               <ChevronRight size={18} color="#9E9E9E" />
             </TouchableOpacity>
           </View>
-          
+
           {isAuthenticated && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.logoutButton}
               onPress={handleLogout}
             >
@@ -145,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: COLORS.primary,
+    // backgroundColor removed to avoid double background with SafeAreaView
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...Platform.select({
@@ -161,6 +168,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     padding: 16,

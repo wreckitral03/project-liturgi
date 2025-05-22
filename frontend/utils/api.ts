@@ -1,11 +1,42 @@
 import axios from 'axios';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-const localIP = 'http://192.168.1.100:3000'; // ← Replace with your Mac’s IP
+const localIP = 'http://192.168.103.93:3000'; // ← Replace with your Mac’s IP
 const API_BASE = Platform.OS === 'ios' || Platform.OS === 'android'
   ? localIP
   : 'http://localhost:3000';
+
+const api = axios.create({
+  baseURL: API_BASE,
+});
+
+// Attach the auth token to every request if available
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// (Optional) Handle 401 Unauthorized globally
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await AsyncStorage.removeItem('auth_token');
+      await AsyncStorage.removeItem('auth_user');
+      // Optionally show a message or navigate to login screen
+    }
+    return Promise.reject(error);
+  }
+);
+
+// --- PUBLIC ENDPOINTS (use plain axios) ---
 
 export const getBibleBooks = async () => {
   const res = await axios.get(`${API_BASE}/bible`);
@@ -37,51 +68,44 @@ export const seedBible = async (verses: Array<{ book: string; chapter: number; v
   return res.data;
 };
 
+// --- PROTECTED ENDPOINTS (use api instance with token) ---
 
-
-// Get daily readings
-// This function fetches the daily readings from the API
-// It takes a date string as an argument and returns the readings for that date
-// The date string should be in the format 'YYYY-MM-DD'
-// The function uses axios to make a GET request to the API endpoint
-// The API endpoint is constructed using the base URL and the date string
-// The function returns the data received from the API
-// The API endpoint is '/readings/daily?date={dateStr}'
-// The dateStr parameter is passed as a query parameter in the URL
-// The function is asynchronous and returns a Promise
 export const getDailyReadings = async (dateStr: string): Promise<any> => {
-  const res = await axios.get(`${API_BASE}/readings/daily?date=${dateStr}`);
+  const res = await api.get(`/readings/daily?date=${dateStr}`);
   return res.data;
 };
 
-
-
-//4. Mock function to get daily summary
 export const getDailySummary = async (dateStr: string): Promise<any> => {
-  const res = await axios.get(`${API_BASE}/summary/daily?date=${dateStr}`);
+  const res = await api.get(`/summary/daily?date=${dateStr}`);
   return res.data;
 };
 
-
-
-//5. function to get AI response
 export const getAIResponse = async (message: string): Promise<any> => {
-  const res = await axios.post(`${API_BASE}/ai/message`, { message });
+  const res = await api.post('/ai/message', { message });
   return res.data;
 };
 
-//6. function to get AI chat history
 export const getAIHistory = async (): Promise<any[]> => {
-  const res = await axios.get(`${API_BASE}/ai/history`);
+  const res = await api.get('/ai/history');
   return res.data;
 };
+
+// --- AUTH ---
 
 export const login = async (email: string, password: string): Promise<any> => {
   const res = await axios.post(`${API_BASE}/auth/login`, { email, password });
-  return res.data;
+  const data = res.data;
+  await AsyncStorage.setItem('auth_token', data.access_token);
+  await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
+  return data;
 };
 
 export const register = async (name: string, email: string, password: string): Promise<any> => {
   const res = await axios.post(`${API_BASE}/auth/register`, { name, email, password });
-  return res.data;
+  const data = res.data;
+  await AsyncStorage.setItem('auth_token', data.access_token);
+  await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
+  return data;
 };
+
+export default api;

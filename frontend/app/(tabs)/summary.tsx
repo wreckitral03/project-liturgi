@@ -13,7 +13,8 @@ import { id } from 'date-fns/locale';
 
 export default function SummaryScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const [selectedDate] = useState(new Date());
   const { summary, checklistItems, toggleChecklistItem, isLoading } = useSummary(selectedDate);
   
@@ -30,14 +31,14 @@ export default function SummaryScreen() {
     );
   }
   
+  
   return (
     <>
-      <StatusBar style="light" />
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar style="light" backgroundColor={COLORS.primary} />
+      <SafeAreaView style={{ backgroundColor: COLORS.primary, flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Ringkasan & Aksi Harian</Text>
         </View>
-        
         <ScrollView 
           style={styles.scrollContainer}
           contentContainerStyle={styles.content}
@@ -102,7 +103,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...Platform.select({
@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     padding: 16,

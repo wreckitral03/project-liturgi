@@ -35,8 +35,8 @@ export default function HomeScreen() {
 
   return (
     <>
-      <StatusBar style="light" />
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar style="light" backgroundColor={COLORS.primary} />
+      <SafeAreaView style={{ backgroundColor: COLORS.primary, flex: 1 }} edges={['top']}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Liturgi Harian</Text>
           <TouchableOpacity 
@@ -46,17 +46,15 @@ export default function HomeScreen() {
             <Book color="#FFF" size={24} />
           </TouchableOpacity>
         </View>
-        
-        <DateNavigator 
-          date={selectedDate} 
-          onDateChange={setSelectedDate} 
-        />
-        
         <ScrollView 
           style={styles.scrollContainer}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          <DateNavigator 
+            date={selectedDate} 
+            onDateChange={setSelectedDate} 
+          />
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>Memuat bacaan...</Text>
@@ -121,7 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 16,
     flexDirection: 'row',
@@ -148,6 +145,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     padding: 16,
