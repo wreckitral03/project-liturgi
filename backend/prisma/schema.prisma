@@ -10,11 +10,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  role      Role     @default(FREE)
-  createdAt DateTime @default(now())
-  aiResponses AiResponse[]
+  id            String         @id @default(uuid())
+  name          String         // 👈 Add this line
+  email         String         @unique
+  password      String         // 👈 Already added earlier
+  role          Role           @default(FREE)
+  createdAt     DateTime       @default(now())
+  aiResponses   AiResponse[]
+  chatMessages  ChatMessage[]
 }
 
 model AiResponse {
@@ -61,4 +64,13 @@ model Summary {
   summary   String
   checklist Json
   createdAt DateTime @default(now())
+}
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  isUser    Boolean
+  text      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

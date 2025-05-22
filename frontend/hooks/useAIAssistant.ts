@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockGetAIResponse, mockGetAIHistory } from '@/utils/mockApi';
+import { getAIResponse, getAIHistory } from '@/utils/api';
 
 export function useAIAssistant() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
@@ -9,7 +9,7 @@ export function useAIAssistant() {
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
-        const history = await mockGetAIHistory();
+        const history = await getAIHistory();
         setChatHistory(history);
         
         // Check if daily token is used
@@ -41,7 +41,7 @@ export function useAIAssistant() {
       setChatHistory(prev => [...prev, userMessage]);
       
       // Get AI response
-      const response = await mockGetAIResponse(message);
+      const response = await getAIResponse(message);
       
       // Add AI response to chat history
       setChatHistory(prev => [...prev, response]);

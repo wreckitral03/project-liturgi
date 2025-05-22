@@ -1,10 +1,46 @@
-
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AiService {
-  saveResponse(data: any) {
-    console.log('Received AI response from n8n:', data);
-    return { success: true, received: data };
+  constructor(private readonly prisma: PrismaService) {}
+
+  async getAIResponse(message: string, userId: string) {
+    // Save user message
+    await this.prisma.chatMessage.create({
+      data: {
+        userId,
+        isUser: true,
+        text: message,
+      },
+    });
+
+    // Generate mock AI response
+    const aiResponse = {
+      isUser: false,
+      text: 'Saya mendengar bahwa kamu sedang menghadapi situasi yang sulit. Tetaplah kuat dalam iman dan percaya bahwa Tuhan selalu menyertai kamu. Berikut ayat yang mungkin dapat menguatkan kamu:',
+      verse: {
+        reference: 'Filipi 4:13',
+        text: 'Segala perkara dapat kutanggung di dalam Dia yang memberi kekuatan kepadaku.',
+      },
+    };
+
+    // Save AI response
+    await this.prisma.chatMessage.create({
+      data: {
+        userId,
+        isUser: false,
+        text: aiResponse.text,
+      },
+    });
+
+    return aiResponse;
+  }
+
+  async getUserChatHistory(userId: string) {
+    return this.prisma.chatMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
   }
 }

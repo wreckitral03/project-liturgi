@@ -1,107 +1,29 @@
-import React, { createContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { Alert } from 'react-native';
-import { mockLogin, mockRegister } from '@/utils/mockApi';
+import { createContext, useContext, useState } from 'react';
+import { login as loginApi, register as registerApi } from '@/utils/api';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+const AuthContext = createContext(null);
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  login: async () => {},
-  register: async () => {},
-  logout: () => {},
-});
+  const login = async (email, password) => {
+    const data = await loginApi(email, password);
+    setUser(data.user);
+    setToken(data.access_token);
+  };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+  const register = async (name, email, password) => {
+    const data = await registerApi(name, email, password);
+    setUser(data.user);
+    setToken(data.access_token);
+  };
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Check for saved user on component mount
-  useEffect(() => {
-    const checkSavedUser = async () => {
-      try {
-        // In a real app, you would get the user from AsyncStorage
-        // For this mock, we'll just leave it as not authenticated
-        setIsAuthenticated(false);
-        setUser(null);
-      } catch (error) {
-        console.error('Failed to get saved user:', error);
-      }
-    };
-    
-    checkSavedUser();
-  }, []);
-  
-  const login = useCallback(async (email: string, password: string) => {
-    setIsLoading(true);
-    
-    try {
-      // Mock API call
-      const userData = await mockLogin(email, password);
-      setUser(userData);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    setIsLoading(true);
-    
-    try {
-      // Mock API call
-      const userData = await mockRegister(name, email, password);
-      setUser(userData);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Register error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  
-  const logout = useCallback(() => {
-    // In a real app, you would clear tokens from AsyncStorage
-    setUser(null);
-    setIsAuthenticated(false);
-  }, []);
-  
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, login, register }}>
       {children}
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => useContext(AuthContext);

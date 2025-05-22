@@ -61,3 +61,27 @@ export const getDailySummary = async (dateStr: string): Promise<any> => {
   const res = await axios.get(`${API_BASE}/summary/daily?date=${dateStr}`);
   return res.data;
 };
+
+
+
+//5. function to get AI response
+export const getAIResponse = async (message: string): Promise<any> => {
+  const res = await axios.post(`${API_BASE}/ai/message`, { message });
+  return res.data;
+};
+
+//6. function to get AI chat history
+export const getAIHistory = async (): Promise<any[]> => {
+  const res = await axios.get(`${API_BASE}/ai/history`);
+  return res.data;
+};
+
+export const login = async (email: string, password: string): Promise<any> => {
+  const res = await axios.post(`${API_BASE}/auth/login`, { email, password });
+  return res.data;
+};
+
+export const register = async (name: string, email: string, password: string): Promise<any> => {
+  const res = await axios.post(`${API_BASE}/auth/register`, { name, email, password });
+  return res.data;
+};
