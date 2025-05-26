@@ -65,7 +65,7 @@ export default function SummaryScreen() {
               <View style={styles.checklistContainer}>
                 <Text style={styles.checklistTitle}>Aksi Harian</Text>
                 
-                {checklistItems.map((item, index) => (
+                {Array.isArray(checklistItems) && checklistItems.map((item, index) => (
                   <TouchableOpacity 
                     key={index}
                     style={styles.checklistItem}

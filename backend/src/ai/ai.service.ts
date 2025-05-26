@@ -31,6 +31,8 @@ export class AiService {
         userId,
         isUser: false,
         text: aiResponse.text,
+        verseReference: aiResponse.verse.reference,
+        verseText: aiResponse.verse.text,
       },
     });
 
@@ -38,9 +40,19 @@ export class AiService {
   }
 
   async getUserChatHistory(userId: string) {
-    return this.prisma.chatMessage.findMany({
+    const messages = await this.prisma.chatMessage.findMany({
       where: { userId },
       orderBy: { createdAt: 'asc' },
     });
+
+    return messages.map((msg) => ({
+      ...msg,
+      verse: msg.verseReference && msg.verseText
+        ? {
+            reference: msg.verseReference,
+            text: msg.verseText,
+          }
+        : undefined,
+    }));
   }
 }

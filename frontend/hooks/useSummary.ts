@@ -16,8 +16,8 @@ export function useSummary(date: Date) {
         console.log('📅 Calling getDailySummary with:', formattedDate);
         const data = await getDailySummary(formattedDate);
         console.log('✅ Received summary data:', data);
-        setSummary(data.summary);
-        setChecklistItems(data.checklist);
+        setSummary(data.summary ?? '');
+        setChecklistItems(Array.isArray(data.checklist) ? data.checklist : []);
       } catch (error) {
         console.error('Error fetching summary:', error);
       } finally {

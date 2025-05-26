@@ -66,11 +66,13 @@ model Summary {
   createdAt DateTime @default(now())
 }
 model ChatMessage {
-  id        String   @id @default(uuid())
-  userId    String
-  isUser    Boolean
-  text      String
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String
+  isUser         Boolean
+  text           String
+  verseReference String?
+  verseText      String?
+  createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
