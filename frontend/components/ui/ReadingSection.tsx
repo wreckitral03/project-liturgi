@@ -13,13 +13,13 @@ interface ReadingSectionProps {
 
 export default function ReadingSection({ icon, title, reference, content, isFirst }: ReadingSectionProps) {
   const [expanded, setExpanded] = useState(false);
-  
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
-  
+  // Split content into paragraphs by double newlines or single newlines
+  const paragraphs = content.split(/\n\n|\n/).filter(p => p.trim().length > 0);
   return (
-    <View style={[styles.container, isFirst && { marginTop: 0 }]}>
+    <View style={[styles.container, isFirst && { marginTop: 0 }]}> 
       <View style={styles.header}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>{icon}</Text>
@@ -35,10 +35,11 @@ export default function ReadingSection({ icon, title, reference, content, isFirs
           }
         </TouchableOpacity>
       </View>
-      
       {expanded && (
         <View style={styles.contentContainer}>
-          <Text style={styles.content}>{content}</Text>
+          {paragraphs.map((para, idx) => (
+            <Text key={idx} style={[styles.content, { marginBottom: 12 }]}>{para}</Text>
+          ))}
         </View>
       )}
     </View>

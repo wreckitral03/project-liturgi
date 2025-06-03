@@ -5,6 +5,7 @@ export function useAIAssistant() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dailyTokenUsed, setDailyTokenUsed] = useState(false);
+  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
 
   // Helper: check if today's AI reply exists
   const checkDailyTokenUsed = (history: any[]) => {
@@ -38,16 +39,38 @@ export function useAIAssistant() {
 
   const sendMessage = async (message: string) => {
     if (dailyTokenUsed) return;
+    
+    // Immediately show user message
+    setPendingUserMessage(message);
     setIsLoading(true);
+    
     try {
       await getAIResponse(message);
-      await loadChatHistory(); // Reload to sync state with backend (with correct timestamps/token logic)
+      await loadChatHistory(); // Reload to sync state with backend
     } catch (error) {
       console.error('Error sending message:', error);
+      // You might want to show an error message here
     } finally {
       setIsLoading(false);
+      setPendingUserMessage(null);
     }
   };
 
-  return { chatHistory, sendMessage, isLoading, dailyTokenUsed };
+  // Combine real chat history with pending message
+  const displayHistory = pendingUserMessage 
+    ? [...chatHistory, { 
+        isUser: true, 
+        text: pendingUserMessage, 
+        createdAt: new Date().toISOString(),
+        isPending: true 
+      }]
+    : chatHistory;
+
+  return { 
+    chatHistory: displayHistory, 
+    sendMessage, 
+    isLoading, 
+    dailyTokenUsed,
+    pendingUserMessage 
+  };
 }

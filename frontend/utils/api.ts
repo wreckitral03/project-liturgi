@@ -6,7 +6,8 @@ import Constants from 'expo-constants';
 
 const API_BASE =
   Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE ??
-  Constants.manifest?.extra?.EXPO_PUBLIC_API_BASE;
+  Constants.manifest?.extra?.EXPO_PUBLIC_API_BASE ??
+  'http://localhost:3000'; // Add this fallback
   console.log('📡 API_BASE =', API_BASE);
 
 const api = axios.create({

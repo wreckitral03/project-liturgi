@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -17,7 +17,38 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAIAssistant } from '@/hooks/useAIAssistant';
 import AuthPrompt from '@/components/auth/AuthPrompt';
 import ChatMessage from '@/components/chat/ChatMessage';
+import LoadingMessage from '@/components/chat/LoadingMessage';
 import { COLORS } from '@/utils/theme';
+
+// Helper function to check if two dates are on different days
+const isDifferentDay = (date1?: string, date2?: string) => {
+  if (!date1 || !date2) return false;
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return d1.toDateString() !== d2.toDateString();
+};
+
+// Helper function to format date separator
+const formatDateSeparator = (dateString?: string) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  
+  if (messageDate.getTime() === today.getTime()) {
+    return 'Hari Ini';
+  } else if (messageDate.getTime() === yesterday.getTime()) {
+    return 'Kemarin';
+  } else {
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+};
 
 export default function ChatScreen() {
   const { isAuthenticated } = useAuth();
@@ -66,45 +97,57 @@ export default function ChatScreen() {
             <Text style={styles.headerTitle}>AI Verse Assistant</Text>
           </View>
           
+          {/* Persistent Daily Info Box */}
+          {dailyTokenUsed && (
+            <View style={styles.persistentBanner}>
+              <Text style={styles.persistentBannerText}>
+                Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
+              </Text>
+            </View>
+          )}
+          
           <ScrollView 
             style={styles.chatContainer}
             contentContainerStyle={styles.chatContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Encouragement or Limit Banner */}
-            {dailyTokenUsed ? (
-              <View style={styles.limitBanner}>
-                <Text style={styles.limitText}>
-                  Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
-                </Text>
-              </View>
-            ) : (
+            {/* Welcome message for new users */}
+            {chatHistory.length === 0 && !dailyTokenUsed && (
               <View style={styles.emptyChat}>
+                <Text style={styles.emptyChatTitle}>
+                  Selamat datang di AI Verse Assistant
+                </Text>
                 <Text style={styles.emptyChatDescription}>
                   Bagikan perasaan atau situasi yang kamu alami, dan AI akan memberikan ayat yang sesuai untuk menguatkan kamu.
                 </Text>
               </View>
             )}
 
-            {/* Chat History */}
-            {chatHistory.length === 0 && !dailyTokenUsed && (
-              <View style={styles.emptyChat}>
-                <Text style={styles.emptyChatTitle}>
-                  Selamat datang di AI Verse Assistant
-                </Text>
-              </View>
-            )}
-
-            {/* Show chat messages always below banner with extra top margin */}
-            {chatHistory.map((message, index) => (
-              <View key={index} style={index === 0 ? { marginTop: 16 } : undefined}>
-                <ChatMessage 
-                  message={message}
-                  isLast={index === chatHistory.length - 1}
-                />
-              </View>
-            ))}
+            {/* Chat History with Date Separators */}
+            {chatHistory.map((message, index) => {
+              const showDateSeparator = index === 0 || 
+                isDifferentDay(chatHistory[index - 1]?.createdAt, message.createdAt);
+              
+              return (
+                <React.Fragment key={index}>
+                  {showDateSeparator && (
+                    <View style={styles.dateSeparator}>
+                      <Text style={styles.dateSeparatorText}>
+                        {formatDateSeparator(message.createdAt)}
+                      </Text>
+                    </View>
+                  )}
+                  <ChatMessage 
+                    message={message}
+                    isLast={index === chatHistory.length - 1}
+                  />
+                </React.Fragment>
+              );
+            })}
+            
+            {/* Loading Message */}
+            <LoadingMessage isVisible={isLoading} />
           </ScrollView>
           
           <View style={styles.inputContainer}>
@@ -134,17 +177,10 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.primary, // Makes header color match status bar
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    backgroundColor: COLORS.primary,
     ...Platform.select({
       android: {
         paddingTop: StatusBar.currentHeight,
@@ -156,25 +192,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Inter-Bold',
   },
-  chatContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background, // Ensures rest of page is not blue
-  },
-  chatContent: {
-    padding: 16,
-    paddingBottom: 16,
-  },
-  limitBanner: {
+  persistentBanner: {
     backgroundColor: COLORS.warning,
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
-  limitText: {
+  persistentBannerText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
     color: '#FFF',
     textAlign: 'center',
+  },
+  chatContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  chatContent: {
+    padding: 16,
+    paddingBottom: 16,
   },
   emptyChat: {
     backgroundColor: '#FFF',
@@ -202,6 +239,21 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  dateSeparator: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dateSeparatorText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: COLORS.textMuted,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   inputContainer: {
     flexDirection: 'row',
