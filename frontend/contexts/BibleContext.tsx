@@ -47,12 +47,16 @@ export function BibleProvider({ children }: BibleProviderProps) {
     const loadBibleData = async () => {
       setIsLoading(true);
       try {
+        console.log('Loading Bible data...');
         const booksData = await getBibleBooks();
+        console.log('Books data received:', booksData);
+        console.log('Number of books:', booksData?.length);
         setBooks(booksData);
         
         setIsBibleDownloaded(true);
       } catch (error) {
         console.error('Error loading Bible data:', error);
+        console.error('Error details:', error.response?.data || error.message);
       } finally {
         setIsLoading(false);
       }

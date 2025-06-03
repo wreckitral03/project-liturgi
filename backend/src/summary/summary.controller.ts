@@ -14,4 +14,16 @@ export class SummaryController {
   createSummary(@Body() body: { date: string; summary: string; checklist: any }) {
     return this.summaryService.createSummary(body.date, body.summary, body.checklist);
   }
+
+  @Get('checklist-status')
+  getChecklistStatus(@Query('date') date: string, @Query('userId') userId: string) {
+    return this.summaryService.getChecklistStatus(date, userId);
+  }
+
+  @Post('checklist-status')
+  updateChecklistStatus(
+    @Body() body: { date: string; userId: string; checklist: any }
+  ) {
+    return this.summaryService.updateChecklistStatus(body.date, body.userId, body.checklist);
+  }
 }

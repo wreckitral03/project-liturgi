@@ -2,10 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-const localIP = 'http://192.168.103.93:3000'; // ← Replace with your Mac’s IP
-const API_BASE = Platform.OS === 'ios' || Platform.OS === 'android'
-  ? localIP
-  : 'http://localhost:3000';
+const localIP = 'http://192.168.103.64:3000'; // ← Replace with your Mac’s IP
+const API_BASE = localIP; 
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -109,3 +107,22 @@ export const register = async (name: string, email: string, password: string): P
 };
 
 export default api;
+
+// Add these functions after your existing exports in api.ts
+
+// Get checklist status for a specific date and user
+export const getChecklistStatus = async (dateStr: string, userId: string): Promise<any> => {
+  const res = await api.get(`/summary/checklist-status?date=${dateStr}&userId=${userId}`);
+  // If not found, backend returns null
+  return res.data;
+};
+
+// Create (or upsert) checklist status for a specific date and user
+export const upsertChecklistStatus = async (
+  dateStr: string,
+  userId: string,
+  checklist: any
+): Promise<any> => {
+  const res = await api.post(`/summary/checklist-status`, { date: dateStr, userId, checklist });
+  return res.data;
+};

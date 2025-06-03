@@ -29,6 +29,9 @@ export function useAIAssistant() {
       setDailyTokenUsed(checkDailyTokenUsed(history));
     } catch (error) {
       console.error('Error loading chat history:', error);
+      // Set empty history to prevent crash
+      setChatHistory([]);
+      setDailyTokenUsed(false);
     }
   };
 
@@ -38,12 +41,24 @@ export function useAIAssistant() {
 
   const sendMessage = async (message: string) => {
     if (dailyTokenUsed) return;
+    
+    // Immediately add the user's message to chatHistory
+    setChatHistory((prev) => [
+      ...prev,
+      {
+        text: message,
+        isUser: true,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    
     setIsLoading(true);
     try {
       await getAIResponse(message);
-      await loadChatHistory(); // Reload to sync state with backend (with correct timestamps/token logic)
+      await loadChatHistory(); // Reload to sync state with backend (gets AI response)
     } catch (error) {
       console.error('Error sending message:', error);
+      // Optionally show error state in UI
     } finally {
       setIsLoading(false);
     }
