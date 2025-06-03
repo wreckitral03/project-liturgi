@@ -30,7 +30,6 @@ const TIPS_AND_ENCOURAGEMENT = [
 export default function LoadingMessage({ isVisible }: LoadingMessageProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showTip, setShowTip] = useState(false);
-  const [startTime] = useState(Date.now());
 
   useEffect(() => {
     if (!isVisible) {
@@ -47,6 +46,7 @@ export default function LoadingMessage({ isVisible }: LoadingMessageProps) {
     // Show tips after 5 seconds, then rotate every 4 seconds
     const tipTimeout = setTimeout(() => {
       setShowTip(true);
+      setCurrentMessageIndex(0); // Reset index for tips
       const tipInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % TIPS_AND_ENCOURAGEMENT.length);
       }, 4000);
@@ -62,9 +62,6 @@ export default function LoadingMessage({ isVisible }: LoadingMessageProps) {
 
   if (!isVisible) return null;
 
-  const currentTime = Date.now();
-  const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
-
   return (
     <View style={styles.container}>
       <View style={styles.messageContainer}>
@@ -76,11 +73,6 @@ export default function LoadingMessage({ isVisible }: LoadingMessageProps) {
         <Text style={styles.messageText}>
           {showTip ? TIPS_AND_ENCOURAGEMENT[currentMessageIndex] : WAITING_MESSAGES[currentMessageIndex]}
         </Text>
-        {elapsedSeconds > 8 && (
-          <Text style={styles.timeText}>
-            Sudah menunggu {elapsedSeconds} detik... hampir selesai!
-          </Text>
-        )}
       </View>
     </View>
   );
@@ -125,13 +117,5 @@ const styles = StyleSheet.create({
     color: COLORS.textMain,
     textAlign: 'center',
     lineHeight: 20,
-  },
-  timeText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 12,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginTop: 8,
-    fontStyle: 'italic',
   },
 });

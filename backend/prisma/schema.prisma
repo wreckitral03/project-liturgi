@@ -10,14 +10,39 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  name          String         // 👈 Add this line
-  email         String         @unique
-  password      String         // 👈 Already added earlier
-  role          Role           @default(FREE)
-  createdAt     DateTime       @default(now())
-  aiResponses   AiResponse[]
-  chatMessages  ChatMessage[]
+  id                String                    @id @default(uuid())
+  name              String
+  email             String                    @unique
+  password          String
+  role              Role                      @default(FREE)
+  createdAt         DateTime                  @default(now())
+  aiResponses       AiResponse[]
+  chatMessages      ChatMessage[]
+  checklistStatuses SummaryChecklistStatus[]  // Changed from summaryChecklistStatuses
+}
+
+model Summary {
+  id                String                    @id @default(cuid())
+  date              String                    @unique
+  summary           String
+  checklist         Json
+  createdAt         DateTime                  @default(now())
+  checklistStatuses SummaryChecklistStatus[]  // Changed from summaryChecklistStatuses
+}
+
+// The model name stays the same for database consistency
+model SummaryChecklistStatus {
+  id        String   @id @default(cuid())
+  summaryId String
+  userId    String
+  checklist Json     // Array of {text: string, completed: boolean}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  summary   Summary  @relation(fields: [summaryId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([summaryId, userId]) // Ensure one status per user per summary
 }
 
 model AiResponse {
@@ -58,13 +83,6 @@ model Reading {
   gospelContent   String
 }
 
-model Summary {
-  id        String   @id @default(cuid())
-  date      String   @unique
-  summary   String
-  checklist Json
-  createdAt DateTime @default(now())
-}
 model ChatMessage {
   id             String   @id @default(uuid())
   userId         String
