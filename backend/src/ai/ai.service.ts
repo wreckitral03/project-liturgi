@@ -48,6 +48,7 @@ export class AiService {
       data: {
         userId,
         isUser: false,
+<<<<<<< HEAD
         text: ai.text,
         verseReference: ai.verse?.reference,
         verseText: ai.verse?.text,
@@ -78,6 +79,32 @@ export class AiService {
   
     // Return fallback
     return fallback;
+=======
+        text: aiResponse.text,
+        verseReference: aiResponse.verse.reference,
+        verseText: aiResponse.verse.text,
+      },
+    });
+
+    return aiResponse;
+  }
+
+  async getUserChatHistory(userId: string) {
+    const messages = await this.prisma.chatMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return messages.map((msg) => ({
+      ...msg,
+      verse: msg.verseReference && msg.verseText
+        ? {
+            reference: msg.verseReference,
+            text: msg.verseText,
+          }
+        : undefined,
+    }));
+>>>>>>> c88311e (🔁 Sunday update: Connect BibleContext to backend, switch from mock API to real API)
   }
 }
 

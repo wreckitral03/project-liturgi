@@ -13,6 +13,7 @@ export function useSummary(date: Date) {
       setIsLoading(true);
       try {
         const formattedDate = format(date, 'yyyy-MM-dd');
+<<<<<<< HEAD
         // 1. Get summary for the date (always, for summary text)
         const dailySummary = await getDailySummary(formattedDate);
         setSummary(dailySummary?.summary || '');
@@ -33,6 +34,13 @@ export function useSummary(date: Date) {
 
         // 5. Set checklist items from status (if any), else empty
         setChecklistItems(checklistStatus?.checklist || []);
+=======
+        console.log('📅 Calling getDailySummary with:', formattedDate);
+        const data = await getDailySummary(formattedDate);
+        console.log('✅ Received summary data:', data);
+        setSummary(data.summary ?? '');
+        setChecklistItems(Array.isArray(data.checklist) ? data.checklist : []);
+>>>>>>> c88311e (🔁 Sunday update: Connect BibleContext to backend, switch from mock API to real API)
       } catch (error) {
         console.error('Error fetching summary or checklist status:', error);
       } finally {
