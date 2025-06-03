@@ -4843,6 +4843,11 @@ snapshots:
       merge-options: 3.0.4
       react-native: 0.79.1(@babel/core@7.27.1)(@types/react@19.0.14)(react@19.0.0)
 
+  '@react-native-async-storage/async-storage@2.1.2(react-native@0.79.1(@babel/core@7.27.1)(@types/react@19.0.14)(react@19.0.0))':
+    dependencies:
+      merge-options: 3.0.4
+      react-native: 0.79.1(@babel/core@7.27.1)(@types/react@19.0.14)(react@19.0.0)
+
   '@react-native/assets-registry@0.79.1': {}
 >>>>>>> c4de16d (Regenerate pnpm-lock.yaml to fix Docker build issue)
 
@@ -6969,6 +6974,8 @@ snapshots:
 =======
   is-plain-obj@2.1.0: {}
 
+  is-plain-obj@2.1.0: {}
+
   is-wsl@2.2.0:
 >>>>>>> c4de16d (Regenerate pnpm-lock.yaml to fix Docker build issue)
     dependencies:
@@ -7386,6 +7393,10 @@ snapshots:
       is-plain-obj: 2.1.0
     dev: false
 =======
+  merge-options@3.0.4:
+    dependencies:
+      is-plain-obj: 2.1.0
+
   merge-options@3.0.4:
     dependencies:
       is-plain-obj: 2.1.0

@@ -85,7 +85,6 @@ model SummaryChecklistStatus {
   @@unique([summaryId, userId])
 }
 model ChatMessage {
-<<<<<<< HEAD
   id        String   @id @default(uuid())
   userId    String
   isUser    Boolean
@@ -93,15 +92,5 @@ model ChatMessage {
   verseReference String?
   verseText      String?
   createdAt DateTime @default(now())
-=======
-  id             String   @id @default(uuid())
-  userId         String
-  isUser         Boolean
-  text           String
-  verseReference String?
-  verseText      String?
-  createdAt      DateTime @default(now())
->>>>>>> c88311e (🔁 Sunday update: Connect BibleContext to backend, switch from mock API to real API)
-
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

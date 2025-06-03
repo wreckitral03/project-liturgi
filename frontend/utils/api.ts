@@ -2,17 +2,12 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-<<<<<<< HEAD
-const localIP = 'http://192.168.103.64:3000'; // ← Replace with your Mac’s IP
-const API_BASE = localIP; 
-=======
 import Constants from 'expo-constants';
 
 const API_BASE =
   Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE ??
   Constants.manifest?.extra?.EXPO_PUBLIC_API_BASE;
   console.log('📡 API_BASE =', API_BASE);
->>>>>>> c88311e (🔁 Sunday update: Connect BibleContext to backend, switch from mock API to real API)
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -122,22 +117,3 @@ export const register = async (name: string, email: string, password: string): P
 };
 
 export default api;
-
-// Add these functions after your existing exports in api.ts
-
-// Get checklist status for a specific date and user
-export const getChecklistStatus = async (dateStr: string, userId: string): Promise<any> => {
-  const res = await api.get(`/summary/checklist-status?date=${dateStr}&userId=${userId}`);
-  // If not found, backend returns null
-  return res.data;
-};
-
-// Create (or upsert) checklist status for a specific date and user
-export const upsertChecklistStatus = async (
-  dateStr: string,
-  userId: string,
-  checklist: any
-): Promise<any> => {
-  const res = await api.post(`/summary/checklist-status`, { date: dateStr, userId, checklist });
-  return res.data;
-};
