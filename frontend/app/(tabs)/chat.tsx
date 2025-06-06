@@ -63,8 +63,8 @@ export default function ChatScreen() {
   if (!isAuthenticated) {
     return (
       <AuthPrompt 
-        title="AI Verse Assistant"
-        message="Masuk untuk menggunakan AI pendamping spiritual"
+        title="Liturgi AI Assistant"
+        message="Masuk untuk berbagi cerita harian dan dapatkan motivasi rohani dari AI pendampingmu."
         buttonText="Masuk / Daftar"
       />
     );
@@ -94,14 +94,17 @@ export default function ChatScreen() {
       >
         <SafeAreaView style={{ backgroundColor: COLORS.primary, flex: 1 }} edges={['top']}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>AI Verse Assistant</Text>
+            <Text style={styles.headerTitle}>Liturgi AI Assistant</Text>
           </View>
           
           {/* Persistent Daily Info Box */}
           {dailyTokenUsed && (
             <View style={styles.persistentBanner}>
               <Text style={styles.persistentBannerText}>
-                Kamu sudah menerima ayat hari ini. Coba lagi besok ya 🙏
+                Kamu sudah menerima ayat hari ini.
+              </Text>
+              <Text style={styles.persistentBannerText}>
+                Coba lagi besok ya 🙏
               </Text>
             </View>
           )}
@@ -112,11 +115,20 @@ export default function ChatScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Chat History Info - appears at the top when scrolling */}
+            {chatHistory.length > 0 && (
+              <View style={styles.historyInfoBanner}>
+                <Text style={styles.historyInfoText}>
+                  📅 Menampilkan riwayat percakapan 7 hari terakhir
+                </Text>
+              </View>
+            )}
+            
             {/* Welcome message for new users */}
             {chatHistory.length === 0 && !dailyTokenUsed && (
               <View style={styles.emptyChat}>
                 <Text style={styles.emptyChatTitle}>
-                  Selamat datang di AI Verse Assistant
+                  Selamat datang di Liturgi AI Assistant
                 </Text>
                 <Text style={styles.emptyChatDescription}>
                   Bagikan perasaan atau situasi yang kamu alami, dan AI akan memberikan ayat yang sesuai untuk menguatkan kamu.
@@ -283,5 +295,21 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#BDBDBD',
+  },
+  historyInfoBanner: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginHorizontal: -16,
+    marginTop: -16,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  historyInfoText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 12,
+    color: '#1976D2',
+    textAlign: 'center',
   },
 });

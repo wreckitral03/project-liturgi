@@ -1,5 +1,7 @@
+import { MotiView, MotiText } from 'moti'
+import { Easing } from 'react-native-reanimated'
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { COLORS } from '@/utils/theme';
 
 interface LoadingMessageProps {
@@ -27,54 +29,152 @@ const TIPS_AND_ENCOURAGEMENT = [
   "✨ Setiap hari adalah kesempatan baru untuk berbuat baik"
 ];
 
+// Calculate dynamic timing based on message length
+const getMessageDuration = (message: string) => {
+  const baseTime = 3000; // 3 seconds minimum
+  const extraTime = Math.min(message.length * 50, 3000); // Max 3 extra seconds
+  return baseTime + extraTime;
+};
+
 export default function LoadingMessage({ isVisible }: LoadingMessageProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showTip, setShowTip] = useState(false);
+  const [messageKey, setMessageKey] = useState(0); // For triggering text animations
 
   useEffect(() => {
     if (!isVisible) {
       setCurrentMessageIndex(0);
       setShowTip(false);
+      setMessageKey(0);
       return;
     }
 
-    // Rotate main messages every 2 seconds
-    const messageInterval = setInterval(() => {
-      setCurrentMessageIndex((prev) => (prev + 1) % WAITING_MESSAGES.length);
-    }, 2000);
+    let messageInterval: NodeJS.Timeout;
+    let tipTimeout: NodeJS.Timeout;
+    let tipInterval: NodeJS.Timeout;
 
-    // Show tips after 5 seconds, then rotate every 4 seconds
-    const tipTimeout = setTimeout(() => {
-      setShowTip(true);
-      setCurrentMessageIndex(0); // Reset index for tips
-      const tipInterval = setInterval(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % TIPS_AND_ENCOURAGEMENT.length);
-      }, 4000);
+    // Dynamic timing for main messages
+    const rotateMessages = () => {
+      const currentMessage = WAITING_MESSAGES[currentMessageIndex];
+      const duration = getMessageDuration(currentMessage);
       
-      return () => clearInterval(tipInterval);
-    }, 5000);
+      messageInterval = setTimeout(() => {
+        setCurrentMessageIndex((prev) => {
+          const nextIndex = (prev + 1) % WAITING_MESSAGES.length;
+          setMessageKey(prev => prev + 1); // Trigger animation
+          return nextIndex;
+        });
+        rotateMessages(); // Schedule next rotation
+      }, duration);
+    };
+
+    rotateMessages();
+
+    // Show tips after 8 seconds, then rotate every 5 seconds
+    tipTimeout = setTimeout(() => {
+      setShowTip(true);
+      setCurrentMessageIndex(0);
+      setMessageKey(prev => prev + 1);
+      
+      tipInterval = setInterval(() => {
+        setCurrentMessageIndex((prev) => {
+          const nextIndex = (prev + 1) % TIPS_AND_ENCOURAGEMENT.length;
+          setMessageKey(prev => prev + 1);
+          return nextIndex;
+        });
+      }, 5000);
+    }, 8000);
 
     return () => {
-      clearInterval(messageInterval);
+      clearTimeout(messageInterval);
       clearTimeout(tipTimeout);
+      clearInterval(tipInterval);
     };
-  }, [isVisible]);
+  }, [isVisible, currentMessageIndex]);
 
   if (!isVisible) return null;
 
+  const currentMessage = showTip 
+    ? TIPS_AND_ENCOURAGEMENT[currentMessageIndex] 
+    : WAITING_MESSAGES[currentMessageIndex];
+
   return (
-    <View style={styles.container}>
+    <MotiView
+      style={styles.container}
+      from={{
+        opacity: 0,
+        translateY: 20,
+        scale: 0.95
+      }}
+      animate={{
+        opacity: 1,
+        translateY: 0,
+        scale: 1
+      }}
+      exit={{
+        opacity: 0,
+        translateY: -10,
+        scale: 0.95
+      }}
+      transition={{
+        type: 'spring',
+        damping: 20,
+        stiffness: 300,
+        duration: 600
+      }}
+    >
       <View style={styles.messageContainer}>
+        {/* Animated Loading Dots */}
         <View style={styles.loadingDots}>
-          <View style={[styles.dot, styles.dot1]} />
-          <View style={[styles.dot, styles.dot2]} />
-          <View style={[styles.dot, styles.dot3]} />
+          {[0, 1, 2].map((index) => (
+            <MotiView
+              key={index}
+              style={styles.dot}
+              from={{
+                scale: 0.8,
+                opacity: 0.4
+              }}
+              animate={{
+                scale: [0.8, 1.2, 0.8],
+                opacity: [0.4, 1, 0.4]
+              }}
+              transition={{
+                type: 'timing',
+                duration: 1200,
+                easing: Easing.inOut(Easing.ease),
+                loop: true,
+                delay: index * 200, // Staggered animation
+                repeatReverse: false
+              }}
+            />
+          ))}
         </View>
-        <Text style={styles.messageText}>
-          {showTip ? TIPS_AND_ENCOURAGEMENT[currentMessageIndex] : WAITING_MESSAGES[currentMessageIndex]}
-        </Text>
+
+        {/* Animated Message Text */}
+        <MotiText
+          key={messageKey} // Force re-mount for animation
+          style={styles.messageText}
+          from={{
+            opacity: 0,
+            translateY: 10,
+            scale: 0.95
+          }}
+          animate={{
+            opacity: 1,
+            translateY: 0,
+            scale: 1
+          }}
+          transition={{
+            type: 'spring',
+            damping: 15,
+            stiffness: 200,
+            duration: 400
+          }}
+        >
+          {currentMessage}
+        </MotiText>
       </View>
-    </View>
+    </MotiView>
   );
 }
 
@@ -100,16 +200,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: COLORS.primary,
-    marginHorizontal: 2,
-  },
-  dot1: {
-    animationDelay: '0s',
-  },
-  dot2: {
-    animationDelay: '0.2s',
-  },
-  dot3: {
-    animationDelay: '0.4s',
+    marginHorizontal: 3,
   },
   messageText: {
     fontFamily: 'Inter-Medium',

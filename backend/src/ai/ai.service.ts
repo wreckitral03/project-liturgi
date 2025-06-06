@@ -81,12 +81,21 @@ export class AiService {
     }
   }
 
-  async getUserChatHistory(userId: string) {
+  async getUserChatHistory(userId: string, daysBack: number = 7) {
+    // Calculate date N days ago
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+  
     const messages = await this.prisma.chatMessage.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        createdAt: {
+          gte: cutoffDate
+        }
+      },
       orderBy: { createdAt: 'asc' },
     });
-
+  
     return messages.map((msg) => ({
       ...msg,
       verse: msg.verseReference && msg.verseText
