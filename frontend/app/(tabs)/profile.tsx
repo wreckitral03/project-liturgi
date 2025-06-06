@@ -1,7 +1,9 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Switch, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Download, LogOut, ChevronRight, CircleCheck as CheckCircle, User as UserIcon } from 'lucide-react-native';
+import { Download, LogOut, ChevronRight, CircleCheck as CheckCircle, User as UserIcon, Heart, FileText, HelpCircle, Shield } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useBible } from '@/hooks/useBible';
 import { COLORS } from '@/utils/theme';
@@ -9,6 +11,7 @@ import { COLORS } from '@/utils/theme';
 export default function ProfileScreen() {
   const { isAuthenticated, user, logout } = useAuth();
   const { isBibleDownloaded, downloadBible, isDownloading } = useBible();
+  const router = useRouter();
 
   const handleLogout = () => {
     console.log('HANDLE LOGOUT CLICKED');
@@ -34,46 +37,25 @@ export default function ProfileScreen() {
     Alert.alert("Sukses", "Anda telah keluar.");
   };
 
+  // Updated: Show "coming soon" alert instead of download
   const handleDownloadBible = async () => {
-    if (!isBibleDownloaded && !isDownloading) {
-      try {
-        Alert.alert(
-          "Unduh Alkitab",
-          "Anda akan mengunduh Alkitab untuk digunakan secara offline. Proses ini membutuhkan koneksi internet dan sekitar 5MB ruang penyimpanan.",
-          [
-            {
-              text: "Batal",
-              style: "cancel"
-            },
-            {
-              text: "Unduh",
-              onPress: async () => {
-                try {
-                  await downloadBible();
-                  Alert.alert(
-                    "Berhasil",
-                    "Alkitab berhasil diunduh dan siap digunakan secara offline.",
-                    [{ text: "OK" }]
-                  );
-                } catch (error) {
-                  Alert.alert(
-                    "Gagal",
-                    "Terjadi kesalahan saat mengunduh Alkitab. Silakan coba lagi.",
-                    [{ text: "OK" }]
-                  );
-                }
-              }
-            }
-          ]
-        );
-      } catch (error) {
-        Alert.alert(
-          "Error",
-          "Terjadi kesalahan saat mengunduh Alkitab",
-          [{ text: "OK" }]
-        );
-      }
-    }
+    Alert.alert(
+      "Segera Hadir",
+      "Fitur akan segera tersedia",
+      [{ text: "OK" }]
+    );
+  };
+
+  const handlePrivacyPolicy = () => {
+    router.push('/profile/privacy-policy');
+  };
+
+  const handleTermsOfUse = () => {
+    router.push('/profile/terms-of-use');
+  };
+
+  const handleFAQ = () => {
+    router.push('/profile/faq');
   };
 
   return (
@@ -103,29 +85,65 @@ export default function ProfileScreen() {
             </View>
           </View>
 
+          {/* Updated: Alkitab Offline Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Alkitab Offline</Text>
             <TouchableOpacity
-              style={styles.downloadButton}
+              style={[styles.downloadButton, styles.disabledButton]}
               onPress={handleDownloadBible}
-              disabled={isBibleDownloaded || isDownloading}
             >
               <View style={styles.downloadButtonContent}>
-                {isBibleDownloaded ? (
-                  <CheckCircle size={24} color={COLORS.success} />
-                ) : (
-                  <Download size={24} color={isDownloading ? COLORS.textMuted : COLORS.primary} />
-                )}
-                <Text style={[
-                  styles.downloadButtonText,
-                  (isBibleDownloaded || isDownloading) && styles.downloadButtonTextDisabled
-                ]}>
-                  {isBibleDownloaded
-                    ? "Alkitab tersedia offline"
-                    : isDownloading
-                      ? "Mengunduh..."
-                      : "Unduh Alkitab untuk Akses Offline"}
+                <Download size={24} color={COLORS.textMuted} />
+                <Text style={[styles.downloadButtonText, styles.downloadButtonTextDisabled]}>
+                  Alkitab Offline (Segera Hadir)
                 </Text>
+              </View>
+              <ChevronRight size={18} color="#9E9E9E" />
+            </TouchableOpacity>
+          </View>
+
+          {/* New: Donation Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Dukung Aplikasi Ini</Text>
+            <View style={styles.donationContent}>
+              <View style={styles.donationHeader}>
+                <Heart size={24} color={COLORS.primary} />
+                <Text style={styles.donationDescription}>
+                  Jika aplikasi ini memberkati Anda, dukung pengembangan lebih lanjut.
+                </Text>
+              </View>
+              <View style={styles.bankDetails}>
+                <Text style={styles.bankDetailsTitle}>Detail Bank:</Text>
+                <Text style={styles.bankDetailsText}>BCA 6600398758</Text>
+                <Text style={styles.bankDetailsText}>a.n. Ricky Alexander</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* New: Legal Links Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Informasi Legal</Text>
+            
+            <TouchableOpacity style={styles.legalButton} onPress={handlePrivacyPolicy}>
+              <View style={styles.legalButtonContent}>
+                <Shield size={20} color={COLORS.primary} />
+                <Text style={styles.legalButtonText}>Privacy Policy</Text>
+              </View>
+              <ChevronRight size={18} color="#9E9E9E" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.legalButton} onPress={handleTermsOfUse}>
+              <View style={styles.legalButtonContent}>
+                <FileText size={20} color={COLORS.primary} />
+                <Text style={styles.legalButtonText}>Terms of Use</Text>
+              </View>
+              <ChevronRight size={18} color="#9E9E9E" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={[styles.legalButton, styles.lastLegalButton]} onPress={handleFAQ}>
+              <View style={styles.legalButtonContent}>
+                <HelpCircle size={20} color={COLORS.primary} />
+                <Text style={styles.legalButtonText}>FAQ</Text>
               </View>
               <ChevronRight size={18} color="#9E9E9E" />
             </TouchableOpacity>
@@ -152,7 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    // backgroundColor removed to avoid double background with SafeAreaView
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...Platform.select({
@@ -235,6 +252,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
+  disabledButton: {
+    opacity: 0.6,
+  },
   downloadButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -247,6 +267,64 @@ const styles = StyleSheet.create({
   },
   downloadButtonTextDisabled: {
     color: COLORS.textMuted,
+  },
+  // New: Donation styles
+  donationContent: {
+    paddingVertical: 8,
+  },
+  donationHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  donationDescription: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: COLORS.textMain,
+    lineHeight: 20,
+    marginLeft: 12,
+    flex: 1,
+  },
+  bankDetails: {
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primary,
+  },
+  bankDetailsTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 14,
+    color: COLORS.textMain,
+    marginBottom: 4,
+  },
+  bankDetailsText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: COLORS.textMain,
+    marginBottom: 2,
+  },
+  // New: Legal button styles
+  legalButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  lastLegalButton: {
+    borderBottomWidth: 0,
+  },
+  legalButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legalButtonText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: COLORS.textMain,
+    marginLeft: 12,
   },
   logoutButton: {
     flexDirection: 'row',
