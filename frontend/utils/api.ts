@@ -17,7 +17,7 @@ const api = axios.create({
 // Attach the auth token to every request if available, except for public routes
 api.interceptors.request.use(
   async (config) => {
-    const publicRoutes = ['/bible', '/summary', '/readings'];
+    const publicRoutes = ['/bible', '/readings', '/summary/daily'];
     const isPublic = publicRoutes.some(route => config.url?.startsWith(route));
 
     if (!isPublic) {
@@ -115,6 +115,31 @@ export const register = async (name: string, email: string, password: string): P
   await AsyncStorage.setItem('auth_token', data.access_token);
   await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
   return data;
+};
+
+// --- CHECKLIST ENDPOINTS ---
+
+export const getUserChecklistStatus = async (date: string): Promise<any> => {
+  const res = await api.get(`/summary/checklist/${date}`);
+  return res.data;
+};
+
+export const updateChecklistItem = async (
+  summaryId: string, 
+  itemIndex: number, 
+  completed: boolean
+): Promise<any> => {
+  const res = await api.put(`/summary/checklist/${summaryId}/item/${itemIndex}`, { completed });
+  return res.data;
+};
+
+export const updateChecklistItemByText = async (
+  summaryId: string, 
+  itemText: string, 
+  completed: boolean
+): Promise<any> => {
+  const res = await api.put(`/summary/checklist/${summaryId}/item`, { itemText, completed });
+  return res.data;
 };
 
 export default api;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -16,7 +16,7 @@ export default function SummaryScreen() {
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const [selectedDate] = useState(new Date());
-  const { summary, checklistItems, toggleChecklistItem, isLoading } = useSummary(selectedDate);
+  const { summary, checklistItems, toggleChecklistItem, isLoading, error } = useSummary(selectedDate);
   
   // Format date in Indonesian
   const formattedDate = format(selectedDate, "d MMMM yyyy", { locale: id });
@@ -30,7 +30,6 @@ export default function SummaryScreen() {
       />
     );
   }
-  
   
   return (
     <>
@@ -47,6 +46,12 @@ export default function SummaryScreen() {
           <View style={styles.dateContainer}>
             <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
+
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
           {isLoading ? (
             <View style={styles.loadingContainer}>
@@ -215,4 +220,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textMuted,
   },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
+export default SummaryScreen;

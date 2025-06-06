@@ -1,43 +1,118 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { getDailySummary } from '@/utils/api';
+import { getDailySummary, getUserChecklistStatus, updateChecklistItem } from '@/utils/api';
+import { useAuth } from '@/hooks/useAuth';
+
+interface ChecklistItem {
+  text: string;
+  completed: boolean;
+}
+
+interface UserChecklistStatus {
+  id: string;
+  summaryId: string;
+  userId: string;
+  checklist: ChecklistItem[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function useSummary(date: Date) {
+  const { user } = useAuth();
   const [summary, setSummary] = useState('');
-  const [checklistItems, setChecklistItems] = useState<{ text: string; completed: boolean }[]>([]);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+  const [userChecklistStatus, setUserChecklistStatus] = useState<UserChecklistStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    const fetchSummary = async () => {
-      console.log('fetchSummary called');
+    const fetchData = async () => {
+      if (!user) return;
+      
+      console.log('fetchData called for authenticated user');
       setIsLoading(true);
+      setError(null);
+      
       try {
         const formattedDate = format(date, 'yyyy-MM-dd');
+        
+        // Fetch daily summary (public data)
         console.log('📅 Calling getDailySummary with:', formattedDate);
-        const data = await getDailySummary(formattedDate);
-        console.log('✅ Received summary data:', data);
-        setSummary(data.summary ?? '');
-        setChecklistItems(Array.isArray(data.checklist) ? data.checklist : []);
+        const summaryData = await getDailySummary(formattedDate);
+        console.log('✅ Received summary data:', summaryData);
+        setSummary(summaryData.summary ?? '');
+        
+        // Fetch user-specific checklist status
+        console.log('👤 Calling getUserChecklistStatus with:', formattedDate);
+        const userChecklistData = await getUserChecklistStatus(formattedDate);
+        console.log('✅ Received user checklist data:', userChecklistData);
+        
+        setUserChecklistStatus(userChecklistData);
+        setChecklistItems(Array.isArray(userChecklistData.checklist) ? userChecklistData.checklist : []);
+        
       } catch (error) {
-        console.error('Error fetching summary:', error);
+        console.error('Error fetching data:', error);
+        setError('Failed to load summary data');
+        
+        // Fallback: if user checklist doesn't exist, show empty checklist
+        setChecklistItems([]);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchSummary();
-  }, [date]);
+    fetchData();
+  }, [date, user]);
   
-  const toggleChecklistItem = (index: number) => {
-    setChecklistItems(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        completed: !updated[index].completed
+  const toggleChecklistItem = async (index: number) => {
+    if (!userChecklistStatus || !user) {
+      console.warn('Cannot toggle checklist item: missing user or checklist status');
+      return;
+    }
+    
+    try {
+      // Optimistic update
+      const updatedItems = [...checklistItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        completed: !updatedItems[index].completed
       };
-      return updated;
-    });
+      setChecklistItems(updatedItems);
+      
+      // Update backend
+      const updatedStatus = await updateChecklistItem(
+        userChecklistStatus.summaryId,
+        index,
+        updatedItems[index].completed
+      );
+      
+      console.log('✅ Checklist item updated:', updatedStatus);
+      
+      // Update local state with server response
+      setUserChecklistStatus(updatedStatus);
+      setChecklistItems(Array.isArray(updatedStatus.checklist) ? updatedStatus.checklist : []);
+      
+    } catch (error) {
+      console.error('Error updating checklist item:', error);
+      
+      // Revert optimistic update on error
+      const revertedItems = [...checklistItems];
+      revertedItems[index] = {
+        ...revertedItems[index],
+        completed: !revertedItems[index].completed
+      };
+      setChecklistItems(revertedItems);
+      
+      setError('Failed to update checklist item');
+    }
   };
   
-  return { summary, checklistItems, toggleChecklistItem, isLoading };
+  return { 
+    summary, 
+    checklistItems, 
+    toggleChecklistItem, 
+    isLoading, 
+    error,
+    userChecklistStatus 
+  };
 }

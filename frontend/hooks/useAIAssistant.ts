@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getAIResponse, getAIHistory } from '@/utils/api';
+import { useAuth } from '@/hooks/useAuth'; // Add this import
 
 export function useAIAssistant() {
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dailyTokenUsed, setDailyTokenUsed] = useState(false);
   const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth(); // Add this line
 
   // Helper: check if today's AI reply exists
   const checkDailyTokenUsed = (history: any[]) => {
@@ -24,18 +26,26 @@ export function useAIAssistant() {
 
   // Loads chat history & updates token status
   const loadChatHistory = async () => {
+    if (!isAuthenticated) {
+      // Clear chat history if not authenticated
+      setChatHistory([]);
+      setDailyTokenUsed(false);
+      return;
+    }
+
     try {
       const history = await getAIHistory();
       setChatHistory(history);
       setDailyTokenUsed(checkDailyTokenUsed(history));
     } catch (error) {
       console.error('Error loading chat history:', error);
+      // Don't show error to user on first load - it's expected
     }
   };
 
   useEffect(() => {
     loadChatHistory();
-  }, []);
+  }, [isAuthenticated]); // Add isAuthenticated as dependency
 
   const sendMessage = async (message: string) => {
     if (dailyTokenUsed) return;

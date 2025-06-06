@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export interface ChecklistItem {
@@ -160,7 +160,15 @@ export class SummaryService {
     const itemIndex = checklist.findIndex(item => item.text === itemText);
     
     if (itemIndex === -1) {
+      // Line 163: Uses generic Error instead of NestJS exceptions
       throw new Error('Checklist item not found');
+      // Should be:
+      throw new NotFoundException('Checklist item not found');
+      
+      // Line 108: Uses generic Error
+      throw new Error('Invalid checklist item index');
+      // Should be:
+      throw new BadRequestException('Invalid checklist item index');
     }
 
     // Update only the specific item
