@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Check, Info } from 'lucide-react-native';
+import { Check, Info, Star, Heart } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useSummary } from '@/hooks/useSummary';
@@ -11,15 +11,50 @@ import { COLORS } from '@/utils/theme';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
+// Add the congratulations messages array here
+const CONGRATULATIONS_MESSAGES = [
+  "Anda telah menyelesaikan semua aksi spiritual hari ini. Tuhan memberkati dedikasi dan komitmen Anda dalam menjalani iman. Semoga hari ini membawa kedamaian dan keberkahan yang berlimpah! ✨",
+  "Luar biasa! Anda telah menunjukkan komitmen yang indah dalam perjalanan spiritual hari ini. Semoga setiap langkah yang Anda ambil membawa Anda lebih dekat dengan Tuhan. Diberkati selalu! 🙏",
+  "Selamat! Anda telah menyelesaikan misi spiritual harian dengan penuh dedikasi. Tuhan melihat hati yang tulus dan usaha yang Anda berikan. Semoga berkat-Nya melimpah dalam hidup Anda! 💫",
+  "Sungguh menginspirasi! Konsistensi Anda dalam menjalani praktik spiritual patut diacungi jempol. Semoga setiap doa dan refleksi hari ini menjadi berkat bagi Anda dan orang-orang terkasih. 🌟",
+  "Hebat sekali! Anda telah menunjukkan disiplin spiritual yang luar biasa hari ini. Tuhan pasti berkenan dengan hati yang setia seperti Anda. Terus bersinar dalam iman! ✨",
+  "Terima kasih telah menjadi teladan dalam kehidupan spiritual! Penyelesaian semua aksi harian ini menunjukkan hati yang rindu akan Tuhan. Diberkati melimpah! 🕊️"
+];
+
 export default function SummaryScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const [selectedDate] = useState(new Date());
   const { summary, checklistItems, toggleChecklistItem, isLoading, error } = useSummary(selectedDate);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   
   // Format date in Indonesian
   const formattedDate = format(selectedDate, "d MMMM yyyy", { locale: id });
+  
+  // Check if all items are completed
+  const allItemsCompleted = Array.isArray(checklistItems) && 
+    checklistItems.length > 0 && 
+    checklistItems.every(item => item.completed);
+  
+  // Function to get random congratulations message
+  const getRandomCongratulationsMessage = () => {
+    const randomIndex = Math.floor(Math.random() * CONGRATULATIONS_MESSAGES.length);
+    return CONGRATULATIONS_MESSAGES[randomIndex];
+  };
+  
+  // Show congratulations when all items are completed
+  useEffect(() => {
+    if (allItemsCompleted && !showCongratulations) {
+      // Small delay for better UX
+      const timer = setTimeout(() => {
+        setShowCongratulations(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (!allItemsCompleted && showCongratulations) {
+      setShowCongratulations(false);
+    }
+  }, [allItemsCompleted, showCongratulations]);
   
   if (!isAuthenticated) {
     return (
@@ -93,6 +128,23 @@ export default function SummaryScreen() {
                     </Text>
                   </TouchableOpacity>
                 ))}
+                
+                {/* Congratulations Message */}
+                {showCongratulations && (
+                  <View style={styles.congratulationsContainer}>
+                    <View style={styles.congratulationsHeader}>
+                      <Star size={20} color="#FFD700" fill="#FFD700" />
+                      <Heart size={18} color="#FF6B6B" fill="#FF6B6B" style={{ marginLeft: 8 }} />
+                    </View>
+                    <Text style={styles.congratulationsTitle}>Luar Biasa! 🎉</Text>
+                    <Text style={styles.congratulationsText}>
+                      {getRandomCongratulationsMessage()}
+                    </Text>
+                    <View style={styles.congratulationsBadge}>
+                      <Text style={styles.badgeText}>Misi Harian Selesai</Text>
+                    </View>
+                  </View>
+                )}
               </View>
             </>
           )}
@@ -230,6 +282,47 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: 14,
     textAlign: 'center',
+  },
+  // New congratulations styles
+  congratulationsContainer: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: '#F8FDF8',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D4F4DD',
+    alignItems: 'center',
+  },
+  congratulationsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  congratulationsTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 20,
+    color: '#2D5016',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  congratulationsText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#2D5016',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  congratulationsBadge: {
+    backgroundColor: '#4ADE80',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  badgeText: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 14,
+    color: '#FFF',
   },
 });
 export default SummaryScreen;
