@@ -2,7 +2,7 @@
     "build": {
       "production": {
         "workflow": "managed",
-        "workingDirectory": "frontend" // <-- put the name of your frontend folder
+        "rootDir": "frontend"
       }
     }
   }
