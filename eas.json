@@ -1,8 +1,14 @@
 {
     "build": {
-      "production": {
-        "workflow": "managed",
-        "rootDir": "frontend"
+      "android": {
+        "production": {
+          "rootDir": "frontend"
+        }
+      },
+      "ios": {
+        "production": {
+          "rootDir": "frontend"
+        }
       }
     }
   }
