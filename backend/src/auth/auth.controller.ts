@@ -19,11 +19,11 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() body: RegisterDto) {
-    const { name, email, password } = body;
-    if (!name || !email || !password) {
-      throw new BadRequestException('All fields are required');
-    }
-    return this.authService.register(name, email, password);
+  const { name, email, password, ageCategory } = body;
+  if (!name || !email || !password) {
+    throw new BadRequestException('All fields are required');
   }
+  return this.authService.register(name, email, password, ageCategory);
+}
 }
 

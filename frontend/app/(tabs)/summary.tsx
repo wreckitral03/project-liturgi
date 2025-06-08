@@ -26,7 +26,7 @@ export default function SummaryScreen() {
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const [selectedDate] = useState(new Date());
-  const { summary, checklistItems, toggleChecklistItem, isLoading, error } = useSummary(selectedDate);
+  const { summary, checklistItems, toggleChecklistItem, isLoading, error, noSummaryAvailable } = useSummary(selectedDate);
   const [showCongratulations, setShowCongratulations] = useState(false);
   
   // Format date in Indonesian
@@ -85,12 +85,28 @@ export default function SummaryScreen() {
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity onPress={retryFetch} style={styles.retryButton}>
+                <Text style={styles.retryButtonText}>Coba Lagi</Text>
+              </TouchableOpacity>
             </View>
           )}
 
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>Memuat ringkasan...</Text>
+            </View>
+          ) : noSummaryAvailable ? (
+            <View style={styles.noSummaryContainer}>
+              <View style={styles.noSummaryCard}>
+                <Text style={styles.noSummaryTitle}>Mohon Maaf</Text>
+                <Text style={styles.noSummaryText}>
+                  Ringkasan spiritual untuk tanggal {formattedDate} belum tersedia. 
+                  Silakan coba lagi nanti.
+                </Text>
+                <Text style={styles.noSummarySubtext}>
+                  Anda tetap dapat melakukan refleksi pribadi dan berdoa untuk hari ini. 🙏
+                </Text>
+              </View>
             </View>
           ) : (
             <>
@@ -154,6 +170,7 @@ export default function SummaryScreen() {
   );
 }
 
+// Add these styles to the existing StyleSheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -323,6 +340,44 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
     fontSize: 14,
     color: '#FFF',
+  },
+  noSummaryContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  noSummaryCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  noSummaryTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  noSummaryText: {
+    fontSize: 16,
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  noSummarySubtext: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 export default SummaryScreen;

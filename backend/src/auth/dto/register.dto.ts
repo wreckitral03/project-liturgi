@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsOptional, IsEnum } from 'class-validator';
+
+export enum AgeCategory {
+  TEEN_YOUTH = 'TEEN_YOUTH',
+  YOUNG_ADULT = 'YOUNG_ADULT', 
+  ADULT = 'ADULT',
+  SENIOR = 'SENIOR'
+}
 
 export class RegisterDto {
   @IsNotEmpty()
@@ -9,4 +16,8 @@ export class RegisterDto {
 
   @MinLength(6)
   password: string;
+
+  @IsOptional()
+  @IsEnum(AgeCategory)
+  ageCategory?: AgeCategory;
 }

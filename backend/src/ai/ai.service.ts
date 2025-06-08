@@ -6,6 +6,33 @@ export class AiService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAIResponse(message: string, userId: string) {
+    // Get user's age category from database
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { ageCategory: true }
+    });
+    
+    // ADD THIS DEBUG LOG
+    console.log('👤 User data:', { userId, ageCategory: user?.ageCategory });
+    
+    // Helper function to get age range info
+    const getAgeInfo = (ageCategory: string) => {
+      switch (ageCategory) {
+        case 'TEEN_YOUTH':
+          return { category: 'TEEN_YOUTH', ageRange: '<17', representativeAge: 16 };
+        case 'YOUNG_ADULT':
+          return { category: 'YOUNG_ADULT', ageRange: '18-25', representativeAge: 22 };
+        case 'ADULT':
+          return { category: 'ADULT', ageRange: '26-59', representativeAge: 40 };
+        case 'SENIOR':
+          return { category: 'SENIOR', ageRange: '60+', representativeAge: 65 };
+        default:
+          return { category: 'YOUNG_ADULT', ageRange: '18-25', representativeAge: 22 };
+      }
+    };
+  
+    const ageInfo = getAgeInfo(user?.ageCategory || 'YOUNG_ADULT');
+  
     // Save user message
     await this.prisma.chatMessage.create({
       data: {
@@ -14,17 +41,29 @@ export class AiService {
         text: message,
       },
     });
-
-    // Call n8n webhook instead of mock response
+  
+    // Call n8n webhook with enhanced age context
     try {
+      const requestPayload = {
+        user_id: userId,
+        message: message,
+        ageCategory: ageInfo.category,
+        ageRange: ageInfo.ageRange,
+        representativeAge: ageInfo.representativeAge,
+        context: {
+          userAgeGroup: ageInfo.category,
+          userAgeRange: ageInfo.ageRange,
+          userAge: ageInfo.representativeAge
+        }
+      };
+      console.log('🚀 Sending to n8n:', JSON.stringify(requestPayload, null, 2));
+      
       const response = await fetch('http://localhost:5678/webhook/7bf1540a-d3ba-429e-bf4e-b7ec5387c543', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: message,
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {

@@ -24,4 +24,6 @@ export class AiController {
     const userId = req.user?.id || 'demo-user';
     return this.aiService.getUserChatHistory(userId);
   }
+
+  
 }

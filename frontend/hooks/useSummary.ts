@@ -24,6 +24,7 @@ export function useSummary(date: Date) {
   const [userChecklistStatus, setUserChecklistStatus] = useState<UserChecklistStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [noSummaryAvailable, setNoSummaryAvailable] = useState(false);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +33,7 @@ export function useSummary(date: Date) {
       console.log('fetchData called for authenticated user');
       setIsLoading(true);
       setError(null);
+      setNoSummaryAvailable(false);
       
       try {
         const formattedDate = format(date, 'yyyy-MM-dd');
@@ -50,10 +52,20 @@ export function useSummary(date: Date) {
         setUserChecklistStatus(userChecklistData);
         setChecklistItems(Array.isArray(userChecklistData.checklist) ? userChecklistData.checklist : []);
         
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to load summary data');
+      } catch (error: any) {
+        // Only log unexpected errors, not 404s which are expected
+        if (error.response?.status !== 404) {
+          console.error('Error fetching data:', error);
+        }
         
+        // Handle different types of errors
+        if (error.response?.status === 404) {
+          setNoSummaryAvailable(true);
+          setError(null);
+        } else {
+          setError('Terjadi kesalahan saat memuat data. Silakan coba lagi.');
+          setNoSummaryAvailable(false);
+        }
         // Fallback: if user checklist doesn't exist, show empty checklist
         setChecklistItems([]);
       } finally {
@@ -113,6 +125,7 @@ export function useSummary(date: Date) {
     toggleChecklistItem, 
     isLoading, 
     error,
+    noSummaryAvailable,
     userChecklistStatus 
   };
 }

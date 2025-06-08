@@ -15,10 +15,19 @@ model User {
   email             String                    @unique
   password          String
   role              Role                      @default(FREE)
+  ageCategory       AgeCategory?              @default(YOUNG_ADULT) // New field
   createdAt         DateTime                  @default(now())
   aiResponses       AiResponse[]
   chatMessages      ChatMessage[]
-  checklistStatuses SummaryChecklistStatus[]  // Changed from summaryChecklistStatuses
+  checklistStatuses SummaryChecklistStatus[]
+}
+
+// Add new enum for age categories
+enum AgeCategory {
+  TEEN_YOUTH    // <17
+  YOUNG_ADULT   // 18-25
+  ADULT         // 26-59
+  SENIOR        // 60+
 }
 
 model Summary {

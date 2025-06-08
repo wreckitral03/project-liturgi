@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -14,6 +14,14 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { COLORS } from '@/utils/theme';
 
+// Add age category enum
+export enum AgeCategory {
+  TEEN_YOUTH = 'TEEN_YOUTH',
+  YOUNG_ADULT = 'YOUNG_ADULT', 
+  ADULT = 'ADULT',
+  SENIOR = 'SENIOR'
+}
+
 export default function RegisterScreen() {
   const router = useRouter();
   const { register, isLoading } = useAuth();
@@ -21,6 +29,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [ageCategory, setAgeCategory] = useState<AgeCategory | null>(null); // Add this
   const [error, setError] = useState('');
   
   const handleRegister = async () => {
@@ -47,7 +56,7 @@ export default function RegisterScreen() {
     setError('');
     
     try {
-      await register(name, email, password);
+      await register(name, email, password, ageCategory); // Add ageCategory parameter
       router.replace('/(tabs)');
     } catch (err) {
       setError('Gagal membuat akun. Silahkan coba lagi.');
@@ -129,6 +138,31 @@ export default function RegisterScreen() {
             />
           </View>
           
+          {/* Add age category selection UI after the confirm password field */}
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Kategori Usia</Text>
+            <View style={styles.ageCategoryContainer}>
+              {Object.values(AgeCategory).map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.ageCategoryButton,
+                    ageCategory === category && styles.ageCategoryButtonSelected
+                  ]}
+                  onPress={() => setAgeCategory(category)}
+                >
+                  <Text style={[
+                    styles.ageCategoryText,
+                    ageCategory === category && styles.ageCategoryTextSelected
+                  ]}>
+                    {getAgeCategoryLabel(category)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
           <TouchableOpacity
             style={styles.registerButton}
             onPress={handleRegister}
@@ -155,6 +189,23 @@ export default function RegisterScreen() {
   );
 }
 
+// Add helper function
+const getAgeCategoryLabel = (category: AgeCategory): string => {
+  switch (category) {
+    case AgeCategory.TEEN_YOUTH:
+      return 'Remaja (13-17 tahun)';
+    case AgeCategory.YOUNG_ADULT:
+      return 'Dewasa Muda (18-35 tahun)';
+    case AgeCategory.ADULT:
+      return 'Dewasa (36-59 tahun)';
+    case AgeCategory.SENIOR:
+      return 'Senior (60+ tahun)';
+    default:
+      return category;
+  }
+};
+
+// Add styles for age category selection
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -235,5 +286,31 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
     color: COLORS.error,
+  },
+  ageCategoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  ageCategoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#F5F5F5',
+  },
+  ageCategoryButtonSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  ageCategoryText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  ageCategoryTextSelected: {
+    color: '#FFF',
+    fontWeight: '600',
   },
 });

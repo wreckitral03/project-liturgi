@@ -1,12 +1,19 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useContext, useState, useEffect } from 'react';
 import { login as loginApi, register as registerApi } from '@/utils/api';
 
+type User = {
+  id: string;
+  email: string;
+  role: string;
+  ageCategory?: string; // Add this
+};
+
 type AuthContextType = {
-  user: any;
+  user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, ageCategory?: string) => Promise<void>; // Update this
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 };
@@ -14,7 +21,7 @@ type AuthContextType = {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
   const restoreSession = async () => {
@@ -36,15 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const data = await loginApi(email, password);
-    setUser(data.user);
+    setUser(data.user); // This will now include ageCategory from backend
     setToken(data.access_token);
     await AsyncStorage.setItem('auth_token', data.access_token);
     await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const data = await registerApi(name, email, password);
-    setUser(data.user);
+  const register = async (name: string, email: string, password: string, ageCategory?: string) => {
+    const data = await registerApi(name, email, password, ageCategory);
+    setUser(data.user); // This will include ageCategory
     setToken(data.access_token);
     await AsyncStorage.setItem('auth_token', data.access_token);
     await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));

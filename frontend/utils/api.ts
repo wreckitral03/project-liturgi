@@ -109,13 +109,26 @@ export const login = async (email: string, password: string): Promise<any> => {
   return data;
 };
 
-export const register = async (name: string, email: string, password: string): Promise<any> => {
-  const res = await api.post('/auth/register', { name, email, password });
+// Update the register function to include ageCategory
+export const register = async (
+  name: string, 
+  email: string, 
+  password: string, 
+  ageCategory?: string
+): Promise<any> => {
+  const payload: any = { name, email, password };
+  if (ageCategory) {
+    payload.ageCategory = ageCategory;
+  }
+  
+  const res = await api.post('/auth/register', payload);
   const data = res.data;
   await AsyncStorage.setItem('auth_token', data.access_token);
   await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
   return data;
 };
+
+// login function remains the same - it will now receive ageCategory from backend
 
 // --- CHECKLIST ENDPOINTS ---
 
