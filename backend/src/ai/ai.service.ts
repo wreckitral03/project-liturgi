@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class AiService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAIResponse(message: string, userId: string) {
+  async getAIResponse(userId: string, message: string): Promise<any> {
     // Get user's age category from database
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -42,22 +42,41 @@ export class AiService {
       },
     });
   
-    // Call n8n webhook with enhanced age context
+  
+    // Get the last user context for this user (if any)
+    const lastUserContext = await this.prisma.userContext.findFirst({
+      where: { 
+        userId,
+        context: { 
+          not: null,
+          // Add additional filtering to ensure it's the right format
+          // This will effectively return null until AI fills it properly
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        context: true
+      }
+    });
+  
+    // Call n8n webhook with simplified payload
     try {
       const requestPayload = {
         user_id: userId,
         message: message,
-        ageCategory: ageInfo.category,
+        //ageCategory: ageInfo.category,
         ageRange: ageInfo.ageRange,
-        representativeAge: ageInfo.representativeAge,
+        //representativeAge: ageInfo.representativeAge,
         context: {
-          userAgeGroup: ageInfo.category,
+          //userAgeGroup: ageInfo.category,
           userAgeRange: ageInfo.ageRange,
-          userAge: ageInfo.representativeAge
+          //userAge: ageInfo.representativeAge,
+          usercontext: lastUserContext?.context || null
         }
       };
-      console.log('🚀 Sending to n8n:', JSON.stringify(requestPayload, null, 2));
-      
+      console.log('Sending to n8n:', JSON.stringify(requestPayload, null, 2));
+  
+      // With your actual n8n webhook URL:
       const response = await fetch('http://localhost:5678/webhook/7bf1540a-d3ba-429e-bf4e-b7ec5387c543', {
         method: 'POST',
         headers: {
@@ -65,58 +84,53 @@ export class AiService {
         },
         body: JSON.stringify(requestPayload),
       });
-
+  
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`n8n webhook failed: ${response.status}`);
       }
-
-      const aiResponseData = await response.json();
-      console.log('n8n response:', JSON.stringify(aiResponseData, null, 2)); // Debug log
-      
-      // Handle array response from n8n
-      const responseItem = Array.isArray(aiResponseData) ? aiResponseData[0] : aiResponseData;
-      
-      // Structure the response to match your expected format
-      const aiResponse = {
-        isUser: false,
-        text: responseItem?.text || responseItem?.message || 'Maaf, saya tidak dapat memberikan respons saat ini.',
-        verse: responseItem?.verse || null,
-      };
-
+  
+      // Add debugging to see what n8n actually returns
+      const responseText = await response.text();
+      console.log('n8n raw response:', responseText);
+      console.log('n8n response status:', response.status);
+      console.log('n8n response headers:', Object.fromEntries(response.headers.entries()));
+  
+      // Try to parse JSON, with fallback
+      let aiResponse;
+      try {
+        if (responseText.trim() === '') {
+          // Handle empty response from n8n
+          console.log('n8n returned empty response, using default');
+          aiResponse = {
+            message: 'AI request processed successfully',
+            status: 'success'
+          };
+        } else {
+          aiResponse = JSON.parse(responseText);
+        }
+      } catch (parseError) {
+        console.error('Failed to parse n8n response as JSON:', parseError);
+        console.error('Raw response was:', responseText);
+        // Return a default response if JSON parsing fails
+        aiResponse = {
+          message: 'AI response received but could not parse JSON',
+          error: 'JSON_PARSE_ERROR'
+        };
+      }
+  
       // Save AI response
       await this.prisma.chatMessage.create({
         data: {
           userId,
           isUser: false,
-          text: aiResponse.text,
-          verseReference: aiResponse.verse?.reference || null,
-          verseText: aiResponse.verse?.text || null,
+          text: aiResponse.message || 'AI response received',
         },
       });
-
+  
       return aiResponse;
     } catch (error) {
       console.error('Error calling n8n webhook:', error);
-      
-      // Fallback response in case of error
-      const fallbackResponse = {
-        isUser: false,
-        text: 'Maaf, saya mengalami kesulitan teknis. Silakan coba lagi nanti.',
-        verse: null,
-      };
-
-      // Save fallback response
-      await this.prisma.chatMessage.create({
-        data: {
-          userId,
-          isUser: false,
-          text: fallbackResponse.text,
-          verseReference: null,
-          verseText: null,
-        },
-      });
-
-      return fallbackResponse;
+      throw error;
     }
   }
 
@@ -144,5 +158,25 @@ export class AiService {
           }
         : undefined,
     }));
+  }
+  
+  // Add this new method
+  async createUserContext(userId: string, context: any) {
+    try {
+      const userContext = await this.prisma.userContext.create({
+        data: {
+          userId,
+          context
+        }
+      });
+      
+      return {
+        success: true,
+        data: userContext
+      };
+    } catch (error) {
+      console.error('Error creating user context:', error);
+      throw error;
+    }
   }
 }

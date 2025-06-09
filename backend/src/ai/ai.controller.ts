@@ -10,13 +10,8 @@ export class AiController {
   @Post('message')
   async handleMessage(@Body('message') message: string, @Request() req) {
     const userId = req.user?.id || 'demo-user';
-    return this.aiService.getAIResponse(message, userId);
+    return this.aiService.getAIResponse(userId, message);
   }
-
-  // @Post()
-  // receiveAIResponse(@Body() body: any) {
-  //   return this.aiService.saveResponse(body);
-  // }
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
@@ -25,5 +20,14 @@ export class AiController {
     return this.aiService.getUserChatHistory(userId);
   }
 
-  
+  @UseGuards(JwtAuthGuard)
+  @Post('user-context')
+  async createUserContext(@Body() body, @Request() req) {
+    const userId = req.user.id;
+    const context = body.context;
+    return this.aiService.createUserContext(userId, context);
+  }
+
+  // Keep this one for the n8n webhook
+ 
 }

@@ -15,11 +15,25 @@ model User {
   email             String                    @unique
   password          String
   role              Role                      @default(FREE)
-  ageCategory       AgeCategory?              @default(YOUNG_ADULT) // New field
+  ageCategory       AgeCategory?              @default(YOUNG_ADULT)
   createdAt         DateTime                  @default(now())
   aiResponses       AiResponse[]
   chatMessages      ChatMessage[]
   checklistStatuses SummaryChecklistStatus[]
+  userContexts      UserContext[]             // Add this relation
+}
+
+// Add this new model
+model UserContext {
+  id        String   @id @default(uuid())
+  userId    String
+  context   Json?    // Make context optional
+  createdAt DateTime @default(now())
+  
+  // Relation to User
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_contexts")
 }
 
 // Add new enum for age categories
