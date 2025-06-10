@@ -79,7 +79,11 @@ export class AiService {
   
       // With your actual n8n webhook URL:
       // The fetch call already has the userToken in headers:
-      const response = await fetch('http://localhost:5678/webhook/7bf1540a-d3ba-429e-bf4e-b7ec5387c543', {
+      const webhookUrl = process.env.N8N_WEBHOOK_URL;
+      if (!webhookUrl) {
+        throw new Error('N8N_WEBHOOK_URL environment variable is required');
+      }
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

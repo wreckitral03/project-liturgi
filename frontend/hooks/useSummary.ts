@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { getDailySummary, getUserChecklistStatus, updateChecklistItem } from '@/utils/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -119,6 +119,11 @@ export function useSummary(date: Date) {
     }
   };
   
+  // Add this function before the return statement
+  const retryFetch = useCallback(() => {
+    fetchData();
+  }, [user, date]);
+  
   return { 
     summary, 
     checklistItems, 
@@ -126,6 +131,7 @@ export function useSummary(date: Date) {
     isLoading, 
     error,
     noSummaryAvailable,
-    userChecklistStatus 
+    userChecklistStatus,
+    retryFetch  // Add this line
   };
 }

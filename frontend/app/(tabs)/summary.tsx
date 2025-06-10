@@ -26,7 +26,7 @@ export default function SummaryScreen() {
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const [selectedDate] = useState(new Date());
-  const { summary, checklistItems, toggleChecklistItem, isLoading, error, noSummaryAvailable } = useSummary(selectedDate);
+  const { summary, checklistItems, toggleChecklistItem, isLoading, error, noSummaryAvailable, retryFetch } = useSummary(selectedDate);
   const [showCongratulations, setShowCongratulations] = useState(false);
   
   // Format date in Indonesian

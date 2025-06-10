@@ -1,7 +1,6 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from './storage'; // Replace AsyncStorage import
 import { Platform } from 'react-native';
-
 import Constants from 'expo-constants';
 
 const API_BASE =
@@ -21,7 +20,8 @@ api.interceptors.request.use(
     const isPublic = publicRoutes.some(route => config.url?.startsWith(route));
 
     if (!isPublic) {
-      const token = await AsyncStorage.getItem('auth_token');
+      const token = await storage.getItem('auth_token');
+      console.log('API Request - Token found:', !!token, 'Platform:', Platform.OS);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -32,14 +32,14 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// (Optional) Handle 401 Unauthorized globally
+// Handle 401 Unauthorized globally
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await AsyncStorage.removeItem('auth_token');
-      await AsyncStorage.removeItem('auth_user');
-      // Optionally show a message or navigate to login screen
+      console.log('401 Unauthorized - Clearing tokens');
+      await storage.removeItem('auth_token');
+      await storage.removeItem('auth_user');
     }
     return Promise.reject(error);
   }
@@ -103,28 +103,26 @@ export const getAIHistory = async (): Promise<any[]> => {
 
 export const login = async (email: string, password: string): Promise<any> => {
   const res = await api.post('/auth/login', { email, password });
-  const data = res.data;
-  await AsyncStorage.setItem('auth_token', data.access_token);
-  await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
+  const { data } = res;
+  await storage.setItem('auth_token', data.access_token);
+  await storage.setItem('auth_user', JSON.stringify(data.user));
   return data;
 };
 
-// Update the register function to include ageCategory
 export const register = async (
-  name: string, 
-  email: string, 
-  password: string, 
+  name: string,
+  email: string,
+  password: string,
   ageCategory?: string
-): Promise<any> => {
+) => {
   const payload: any = { name, email, password };
   if (ageCategory) {
     payload.ageCategory = ageCategory;
   }
-  
   const res = await api.post('/auth/register', payload);
-  const data = res.data;
-  await AsyncStorage.setItem('auth_token', data.access_token);
-  await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
+  const { data } = res;
+  await storage.setItem('auth_token', data.access_token);
+  await storage.setItem('auth_user', JSON.stringify(data.user));
   return data;
 };
 
