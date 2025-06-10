@@ -207,13 +207,13 @@ const styles = StyleSheet.create({
   persistentBanner: {
     backgroundColor: COLORS.warning,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,   // Reduced from 12 to 8
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   persistentBannerText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 14,
+    fontSize: 12,        // Reduced from 14 to 13
     color: '#FFF',
     textAlign: 'center',
   },

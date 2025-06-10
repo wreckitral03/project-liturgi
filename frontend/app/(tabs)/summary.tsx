@@ -21,6 +21,23 @@ const CONGRATULATIONS_MESSAGES = [
   "Terima kasih telah menjadi teladan dalam kehidupan spiritual! Penyelesaian semua aksi harian ini menunjukkan hati yang rindu akan Tuhan. Diberkati melimpah! 🕊️"
 ];
 
+// Add this helper function before the SummaryScreen component
+const formatSummaryText = (text: string) => {
+  // Split by sentences and group them into paragraphs
+  const sentences = text.split('. ');
+  const paragraphs = [];
+  
+  // Group sentences into paragraphs (2-3 sentences each)
+  for (let i = 0; i < sentences.length; i += 2) {
+    const paragraph = sentences.slice(i, i + 2).join('. ');
+    if (paragraph.trim()) {
+      paragraphs.push(paragraph + (paragraph.endsWith('.') ? '' : '.'));
+    }
+  }
+  
+  return paragraphs;
+};
+
 export default function SummaryScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -115,7 +132,14 @@ export default function SummaryScreen() {
                   <Text style={styles.summaryTitle}>Ringkasan Spiritual</Text>
                   <Info size={18} color={COLORS.textMuted} />
                 </View>
-                <Text style={styles.summaryText}>{summary}</Text>
+                {/* Replace this line: <Text style={styles.summaryText}>{summary}</Text> */}
+                <View style={styles.summaryContent}>
+                  {formatSummaryText(summary).map((paragraph, index) => (
+                    <Text key={index} style={styles.summaryParagraph}>
+                      {paragraph}
+                    </Text>
+                  ))}
+                </View>
               </View>
               
               <View style={styles.checklistContainer}>
@@ -179,6 +203,9 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     ...Platform.select({
       android: {
         paddingTop: StatusBar.currentHeight,
@@ -228,11 +255,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.textMain,
   },
+  summaryContent: {
+    marginTop: 4,
+  },
+  summaryParagraph: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    lineHeight: 26, // Increased from 24 for better readability
+    color: COLORS.textMain,
+    marginBottom: 16, // Add spacing between paragraphs
+    textAlign: 'left', // Better text alignment
+  },
+  // Update the existing summaryText style (keep as fallback)
   summaryText: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 26, // Increased line height
     color: COLORS.textMain,
+    textAlign: 'justify',
   },
   checklistContainer: {
     backgroundColor: '#FFF',

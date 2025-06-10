@@ -159,7 +159,7 @@ export default function ProfileScreen() {
                 style={styles.supportButton}
                 onPress={() => setShowBankDetails(true)}
               >
-                <Text style={styles.supportButtonText}>💝 Dukung Sekarang</Text>
+                <Text style={styles.supportButtonText}>Dukung Sekarang</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -276,6 +276,9 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     ...Platform.select({
       android: {
         paddingTop: StatusBar.currentHeight,
