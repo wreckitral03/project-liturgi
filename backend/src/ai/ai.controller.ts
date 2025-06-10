@@ -10,7 +10,11 @@ export class AiController {
   @Post('message')
   async handleMessage(@Body('message') message: string, @Request() req) {
     const userId = req.user?.id || 'demo-user';
-    return this.aiService.getAIResponse(userId, message);
+    // Extract the Bearer token from the Authorization header
+    const authHeader = req.headers.authorization;
+    const userToken = authHeader?.replace('Bearer ', '') || '';
+    
+    return this.aiService.getAIResponse(userId, message, userToken);
   }
 
   @UseGuards(JwtAuthGuard)
