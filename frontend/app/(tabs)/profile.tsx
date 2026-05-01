@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform, Modal, Clipboard } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 // Add more icons to your existing import
 import { 
   Download, LogOut, ChevronRight, CircleCheck as CheckCircle, 
   User as UserIcon, Heart, FileText, HelpCircle, Shield, Users,
-  Crown, Glasses, UserCheck, Baby, Smile, Star, Award, Copy
+  Crown, Glasses, UserCheck, Baby, Smile, Star, Award
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -334,6 +334,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textMuted,
   },
+  profileAgeCategory: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: COLORS.primary,
+    marginTop: 6,
+  },
   section: {
     backgroundColor: '#FFF',
     borderRadius: 12,
@@ -551,44 +557,3 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
-
-// Alternative icon mapping
-const getAvatarIcon = (ageCategory?: string) => {
-  if (!ageCategory) return UserIcon; // Default icon
-  
-  switch (ageCategory as AgeCategory) {
-    case AgeCategory.TEEN_YOUTH:
-      return Heart; // Heart for youth energy
-    case AgeCategory.YOUNG_ADULT:
-      return UserIcon; // Standard user icon
-    case AgeCategory.ADULT:
-      return Users; // Users icon for established adults
-    case AgeCategory.SENIOR:
-      return Crown; // Crown for wisdom/seniority
-    default:
-      return UserIcon;
-  }
-};
-
-// Add this function in your ProfileScreen component
-const copyToClipboard = async (text: string, label: string) => {
-  try {
-    await Clipboard.setStringAsync(text);
-    Alert.alert('Berhasil!', `${label} telah disalin ke clipboard`);
-  } catch (error) {
-    Alert.alert('Error', 'Gagal menyalin ke clipboard');
-  }
-};
-
-<View style={styles.bankDetailRow}>
-  <Text style={styles.bankLabel}>No. Rekening:</Text>
-  <View style={styles.bankValueContainer}>
-    <Text style={styles.bankValue}>6600398758</Text>
-    <TouchableOpacity 
-      onPress={() => copyToClipboard('6600398758', 'Nomor rekening')}
-      style={styles.copyButton}
-    >
-      <Copy size={16} color={COLORS.primary} />
-    </TouchableOpacity>
-  </View>
-</View>

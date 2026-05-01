@@ -1,27 +1,25 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
     ports:
       - "3000:3000"
+    env_file:
+      - ./backend/.env
     environment:
-      - NODE_ENV=production
-      # Add DB or other env vars here
-    volumes:
-      - ./backend:/app
+      NODE_ENV: production
+      DATABASE_URL: postgresql://youruser:yourpassword@db:5432/yourdb?schema=public
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: sh -c "pnpm migrate:deploy && pnpm start"
 
   frontend:
     build: ./frontend
     ports:
       - "8080:8080"
     environment:
-      - NODE_ENV=production
-      - REACT_APP_BACKEND_URL=http://backend:3000
-    volumes:
-      - ./frontend:/app
+      NODE_ENV: production
+      EXPO_PUBLIC_API_BASE: http://localhost:3000
     depends_on:
       - backend
 
@@ -35,6 +33,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U youruser -d yourdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   pgdata:

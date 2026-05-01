@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Query, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, Param, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { SummaryService, UserChecklistStatusResponse } from './summary.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -7,12 +7,17 @@ export class SummaryController {
   constructor(private readonly summaryService: SummaryService) {}
 
   @Get('daily')
-  getSummary(@Query('date') date: string) {
+  getSummary(@Query('date') date?: string) {
     return this.summaryService.getSummary(date);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('daily')
-  createSummary(@Body() body: { date: string; summary: string; checklist: any }) {
+  createSummary(@Body() body: { date: string; summary: string; checklist: any }, @Request() req) {
+    if (req.user?.role !== 'CONTRIBUTOR') {
+      throw new ForbiddenException('Contributor role is required');
+    }
+
     return this.summaryService.createSummary(body.date, body.summary, body.checklist);
   }
 

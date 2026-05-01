@@ -7,7 +7,7 @@ export class ReadingsController {
   constructor(private readonly readingsService: ReadingsService) {}
 
   @Get('daily')
-  getReading(@Query('date') date: string) {
+  getReading(@Query('date') date?: string) {
     return this.readingsService.getReading(date);
   }
 }

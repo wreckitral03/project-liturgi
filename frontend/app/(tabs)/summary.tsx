@@ -340,6 +340,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  retryButton: {
+    alignSelf: 'center',
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+  },
   // New congratulations styles
   congratulationsContainer: {
     marginTop: 20,
@@ -420,4 +433,3 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
-export default SummaryScreen;

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 function getAbbrFromName(name: string): string | undefined {
   return booksCanon.find((b) => b.name === name)?.abbr;
 }
@@ -125,6 +125,9 @@ export class BibleService {
     if (isNaN(id)) {
       throw new BadRequestException(`Invalid book ID: ${bookId}`);
     }
+    if (!Number.isInteger(chapter) || chapter < 1) {
+      throw new BadRequestException(`Invalid chapter: ${chapter}`);
+    }
     const abbr = getAbbrFromId(id);
     const found = booksCanon.find((b) => b.abbr === abbr);
     if (!found) {
@@ -135,6 +138,10 @@ export class BibleService {
       where: { book: found.name, chapter },
       orderBy: { verse: 'asc' },
     });
+
+    if (verses.length === 0) {
+      throw new NotFoundException(`Chapter not found: ${found.name} ${chapter}`);
+    }
 
     return {
       book: found.name,
@@ -147,10 +154,15 @@ export class BibleService {
   }
 
   async search(query: string) {
+    const normalizedQuery = query?.trim();
+    if (!normalizedQuery) {
+      throw new BadRequestException('Search query is required');
+    }
+
     const results = await this.prisma.verse.findMany({
       where: {
         text: {
-          contains: query,
+          contains: normalizedQuery,
           mode: 'insensitive',
         },
       },
@@ -173,9 +185,12 @@ export class BibleService {
   }
   async getBooksNumber(bookId: string) {
     const id = parseInt(bookId, 10);
+    if (isNaN(id)) {
+      throw new BadRequestException(`Invalid book ID: ${bookId}`);
+    }
     const abbr = getAbbrFromId(id);
     const found = booksCanon.find((b) => b.abbr === abbr);
-    if (!found) throw new Error(`Unknown book ID: ${bookId}`);
+    if (!found) throw new BadRequestException(`Unknown book ID: ${bookId}`);
 
     const result = await this.prisma.verse.aggregate({
       _max: {

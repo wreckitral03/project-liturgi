@@ -38,6 +38,7 @@ export class AuthService {
       access_token: this.generateToken(user),
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
         role: user.role,
         ageCategory: user.ageCategory, // Add this line

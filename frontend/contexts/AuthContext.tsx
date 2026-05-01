@@ -4,6 +4,7 @@ import { login as loginApi, register as registerApi } from '@/utils/api';
 
 type User = {
   id: string;
+  name?: string;
   email: string;
   role: string;
   ageCategory?: string;

@@ -5,9 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReadingsService {
   constructor(private prisma: PrismaService) {}
 
-  async getReading(date: string) {
+  async getReading(date?: string) {
+    const readingDate = date ?? new Date().toISOString().slice(0, 10);
+
     const reading = await this.prisma.reading.findUnique({
-      where: { date },
+      where: { date: readingDate },
     });
 
     if (!reading) return null;

@@ -16,8 +16,12 @@ const api = axios.create({
 // Attach the auth token to every request if available, except for public routes
 api.interceptors.request.use(
   async (config) => {
-    const publicRoutes = ['/bible', '/readings', '/summary/daily'];
-    const isPublic = publicRoutes.some(route => config.url?.startsWith(route));
+    const method = config.method?.toLowerCase() ?? 'get';
+    const url = config.url ?? '';
+    const isPublic =
+      (method === 'get' && url.startsWith('/bible')) ||
+      (method === 'get' && url.startsWith('/readings')) ||
+      (method === 'get' && url.startsWith('/summary/daily'));
 
     if (!isPublic) {
       const token = await storage.getItem('auth_token');

@@ -19,9 +19,11 @@ export interface UserChecklistStatusResponse {
 export class SummaryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getSummary(date: string) {
+  async getSummary(date?: string) {
+    const summaryDate = date ?? new Date().toISOString().slice(0, 10);
+
     return this.prisma.summary.findUnique({
-      where: { date },
+      where: { date: summaryDate },
     });
   }
 
@@ -108,7 +110,7 @@ export class SummaryService {
     
     // Validate item index
     if (itemIndex < 0 || itemIndex >= checklist.length) {
-      throw new Error('Invalid checklist item index');
+      throw new BadRequestException('Invalid checklist item index');
     }
 
     // Update only the specific item
@@ -160,15 +162,7 @@ export class SummaryService {
     const itemIndex = checklist.findIndex(item => item.text === itemText);
     
     if (itemIndex === -1) {
-      // Line 163: Uses generic Error instead of NestJS exceptions
-      throw new Error('Checklist item not found');
-      // Should be:
       throw new NotFoundException('Checklist item not found');
-      
-      // Line 108: Uses generic Error
-      throw new Error('Invalid checklist item index');
-      // Should be:
-      throw new BadRequestException('Invalid checklist item index');
     }
 
     // Update only the specific item

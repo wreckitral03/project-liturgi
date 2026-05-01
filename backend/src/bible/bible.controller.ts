@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query, Post, Body, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, Body, UsePipes, ValidationPipe, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { BibleService } from './bible.service';
 import { VerseDto } from './dto/verse.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 class SearchQueryDto {
   q: string;
@@ -36,8 +37,13 @@ export class BibleController {
   }
 
   @Post('seed') //http://localhost:3000/bible/seed masih error
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async seedBible(@Body() verses: VerseDto[]) {
+  async seedBible(@Body() verses: VerseDto[], @Request() req) {
+    if (req.user?.role !== 'CONTRIBUTOR') {
+      throw new ForbiddenException('Contributor role is required');
+    }
+
     return this.bibleService.seedBible(verses);
   }
 }
