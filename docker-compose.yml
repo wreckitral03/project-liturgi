@@ -2,39 +2,43 @@ services:
   backend:
     build: ./backend
     ports:
-      - "3000:3000"
+      - "${BACKEND_PORT:-3000}:3000"
     env_file:
       - ./backend/.env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://youruser:yourpassword@db:5432/yourdb?schema=public
+      PORT: 3000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://localhost:8081}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-liturgi}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-liturgi}?schema=public
     depends_on:
       db:
         condition: service_healthy
     command: sh -c "pnpm migrate:deploy && pnpm start"
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        EXPO_PUBLIC_API_BASE: ${EXPO_PUBLIC_API_BASE:-http://localhost:3000}
     ports:
-      - "8080:8080"
+      - "${FRONTEND_PORT:-8080}:80"
     environment:
       NODE_ENV: production
-      EXPO_PUBLIC_API_BASE: http://localhost:3000
     depends_on:
       - backend
 
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: youruser
-      POSTGRES_PASSWORD: yourpassword
-      POSTGRES_DB: yourdb
+      POSTGRES_USER: ${POSTGRES_USER:-liturgi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-liturgi}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U youruser -d yourdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-liturgi} -d ${POSTGRES_DB:-liturgi}"]
       interval: 5s
       timeout: 5s
       retries: 10

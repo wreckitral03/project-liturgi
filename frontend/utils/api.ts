@@ -1,19 +1,17 @@
 import axios from 'axios';
-import { storage } from './storage'; // Replace AsyncStorage import
-import { Platform } from 'react-native';
+import { storage } from './storage';
 import Constants from 'expo-constants';
 
 const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE ??
   Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE ??
   Constants.manifest?.extra?.EXPO_PUBLIC_API_BASE ??
-  'http://localhost:3000'; // Add this fallback
-  console.log('📡 API_BASE =', API_BASE);
+  'http://localhost:3000';
 
 const api = axios.create({
   baseURL: API_BASE,
 });
 
-// Attach the auth token to every request if available, except for public routes
 api.interceptors.request.use(
   async (config) => {
     const method = config.method?.toLowerCase() ?? 'get';
@@ -25,7 +23,6 @@ api.interceptors.request.use(
 
     if (!isPublic) {
       const token = await storage.getItem('auth_token');
-      console.log('API Request - Token found:', !!token, 'Platform:', Platform.OS);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -33,23 +30,19 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-// Handle 401 Unauthorized globally
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      console.log('401 Unauthorized - Clearing tokens');
       await storage.removeItem('auth_token');
       await storage.removeItem('auth_user');
     }
     return Promise.reject(error);
-  }
+  },
 );
-
-// --- PUBLIC ENDPOINTS (use plain axios) ---
 
 export const getBibleBooks = async () => {
   const res = await api.get('/bible');
@@ -81,8 +74,6 @@ export const seedBible = async (verses: Array<{ book: string; chapter: number; v
   return res.data;
 };
 
-// --- PROTECTED ENDPOINTS (use api instance with token) ---
-
 export const getDailyReadings = async (dateStr: string): Promise<any> => {
   const res = await api.get(`/readings/daily?date=${dateStr}`);
   return res.data;
@@ -103,8 +94,6 @@ export const getAIHistory = async (): Promise<any[]> => {
   return res.data;
 };
 
-// --- AUTH ---
-
 export const login = async (email: string, password: string): Promise<any> => {
   const res = await api.post('/auth/login', { email, password });
   const { data } = res;
@@ -117,7 +106,7 @@ export const register = async (
   name: string,
   email: string,
   password: string,
-  ageCategory?: string
+  ageCategory?: string,
 ) => {
   const payload: any = { name, email, password };
   if (ageCategory) {
@@ -130,28 +119,24 @@ export const register = async (
   return data;
 };
 
-// login function remains the same - it will now receive ageCategory from backend
-
-// --- CHECKLIST ENDPOINTS ---
-
 export const getUserChecklistStatus = async (date: string): Promise<any> => {
   const res = await api.get(`/summary/checklist/${date}`);
   return res.data;
 };
 
 export const updateChecklistItem = async (
-  summaryId: string, 
-  itemIndex: number, 
-  completed: boolean
+  summaryId: string,
+  itemIndex: number,
+  completed: boolean,
 ): Promise<any> => {
   const res = await api.put(`/summary/checklist/${summaryId}/item/${itemIndex}`, { completed });
   return res.data;
 };
 
 export const updateChecklistItemByText = async (
-  summaryId: string, 
-  itemText: string, 
-  completed: boolean
+  summaryId: string,
+  itemText: string,
+  completed: boolean,
 ): Promise<any> => {
   const res = await api.put(`/summary/checklist/${summaryId}/item`, { itemText, completed });
   return res.data;

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config'; // 👈 import this
+import { ConfigModule } from '@nestjs/config';
 import { BibleModule } from './bible/bible.module';
 import { ReadingsModule } from './readings/readings.module';
 import { AiModule } from './ai/ai.module';
@@ -9,7 +9,7 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // 👈 add this line
+    ConfigModule.forRoot({ isGlobal: true }),
     BibleModule,
     ReadingsModule,
     AiModule,

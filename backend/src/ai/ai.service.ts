@@ -5,18 +5,12 @@ import { PrismaService } from '../prisma/prisma.service';
 export class AiService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Around line 64, modify the webhook call section:
   async getAIResponse(userId: string, message: string, userToken: string): Promise<any> {
-    // Get user's age category from database
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { ageCategory: true }
+      select: { ageCategory: true },
     });
-    
-    // ADD THIS DEBUG LOG
-    console.log('👤 User data:', { userId, ageCategory: user?.ageCategory });
-    
-    // Helper function to get age range info
+
     const getAgeInfo = (ageCategory: string) => {
       switch (ageCategory) {
         case 'TEEN_YOUTH':
@@ -31,10 +25,9 @@ export class AiService {
           return { category: 'YOUNG_ADULT', ageRange: '18-25', representativeAge: 22 };
       }
     };
-  
+
     const ageInfo = getAgeInfo(user?.ageCategory || 'YOUNG_ADULT');
-  
-    // Save user message
+
     await this.prisma.chatMessage.create({
       data: {
         userId,
@@ -42,92 +35,72 @@ export class AiService {
         text: message,
       },
     });
-  
-  
-    // Get the last user context for this user (if any)
+
     const lastUserContext = await this.prisma.userContext.findFirst({
-      where: { 
+      where: {
         userId,
-        context: { 
+        context: {
           not: null,
-          // Add additional filtering to ensure it's the right format
-          // This will effectively return null until AI fills it properly
-        }
+        },
       },
       orderBy: { createdAt: 'desc' },
       select: {
-        context: true
-      }
+        context: true,
+      },
     });
-  
-    // Get recent verse references (add this before the webhook call)
+
     const recentVerseReferences = await this.getRecentVerseReferences(userId, 14);
-  
-    // Call n8n webhook with simplified payload
+
     try {
       const requestPayload = {
         user_id: userId,
-        message: message,
+        message,
         ageRange: ageInfo.ageRange,
         context: {
           userAgeRange: ageInfo.ageRange,
           usercontext: lastUserContext?.context || null,
-          recentVerseReferences: recentVerseReferences // Add this line
-        }
+          recentVerseReferences,
+        },
       };
-      console.log('Sending to n8n:', JSON.stringify(requestPayload, null, 2));
-  
-      // With your actual n8n webhook URL:
-      // The fetch call already has the userToken in headers:
+
       const webhookUrl = process.env.N8N_WEBHOOK_URL;
       if (!webhookUrl) {
         throw new Error('N8N_WEBHOOK_URL environment variable is required');
       }
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(requestPayload),
       });
-  
+
       if (!response.ok) {
         throw new Error(`n8n webhook failed: ${response.status}`);
       }
-  
-      // Add debugging to see what n8n actually returns
+
       const responseText = await response.text();
-      console.log('n8n raw response:', responseText);
-      console.log('n8n response status:', response.status);
-      console.log('n8n response headers:', Object.fromEntries(response.headers.entries()));
-  
-      // Try to parse JSON, with fallback
       let aiResponse;
+
       try {
-        if (responseText.trim() === '') {
-          // Handle empty response from n8n
-          console.log('n8n returned empty response, using default');
-          aiResponse = {
-            message: 'AI request processed successfully',
-            status: 'success'
-          };
-        } else {
-          aiResponse = JSON.parse(responseText);
-        }
+        aiResponse = responseText.trim()
+          ? JSON.parse(responseText)
+          : {
+              message: 'AI request processed successfully',
+              status: 'success',
+            };
       } catch (parseError) {
         console.error('Failed to parse n8n response as JSON:', parseError);
-        console.error('Raw response was:', responseText);
-        // Return a default response if JSON parsing fails
         aiResponse = {
           message: 'AI response received but could not parse JSON',
-          error: 'JSON_PARSE_ERROR'
+          error: 'JSON_PARSE_ERROR',
         };
       }
-  
-      // Save AI response
+
       const responseData = Array.isArray(aiResponse) ? aiResponse[0] : aiResponse;
-  
+
       await this.prisma.chatMessage.create({
         data: {
           userId,
@@ -137,44 +110,39 @@ export class AiService {
           verseText: responseData.verse?.text || null,
         },
       });
-  
-      // Check if usercontext field exists and is not null/empty
+
       if (responseData.usercontext && responseData.usercontext.trim() !== '') {
-        // Create new UserContext entry
         await this.prisma.userContext.create({
           data: {
             userId,
             context: {
               text: responseData.usercontext,
-            }
-          }
+            },
+          },
         });
-        
-        console.log('UserContext created for user:', userId);
       }
-  
+
       return aiResponse;
     } catch (error) {
-      console.error('Error calling n8n webhook:', error);
+      console.error('Error calling n8n webhook');
       throw error;
     }
   }
 
   async getUserChatHistory(userId: string, daysBack: number = 7) {
-    // Calculate date N days ago
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-  
+
     const messages = await this.prisma.chatMessage.findMany({
-      where: { 
+      where: {
         userId,
         createdAt: {
-          gte: cutoffDate
-        }
+          gte: cutoffDate,
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
-  
+
     return messages.map((msg) => ({
       ...msg,
       verse: msg.verseReference && msg.verseText
@@ -185,50 +153,49 @@ export class AiService {
         : undefined,
     }));
   }
-  
-  // Add this new method after the existing getChatHistory method
+
   async getRecentVerseReferences(userId: string, daysBack: number = 14): Promise<string[]> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-  
+
     const messages = await this.prisma.chatMessage.findMany({
-      where: { 
+      where: {
         userId,
         verseReference: {
-          not: null // Only get messages that have verse references
+          not: null,
         },
         createdAt: {
-          gte: cutoffDate
-        }
+          gte: cutoffDate,
+        },
       },
       select: {
         verseReference: true,
-        createdAt: true
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
-      distinct: ['verseReference'] // Avoid duplicates
+      distinct: ['verseReference'],
     });
-  
+
     return messages
-      .map(msg => msg.verseReference)
-      .filter(ref => ref !== null) as string[];
+      .map((msg) => msg.verseReference)
+      .filter((ref) => ref !== null) as string[];
   }
-  
+
   async createUserContext(userId: string, context: any) {
     try {
       const userContext = await this.prisma.userContext.create({
         data: {
           userId,
-          context
-        }
+          context,
+        },
       });
-      
+
       return {
         success: true,
-        data: userContext
+        data: userContext,
       };
     } catch (error) {
-      console.error('Error creating user context:', error);
+      console.error('Error creating user context');
       throw error;
     }
   }

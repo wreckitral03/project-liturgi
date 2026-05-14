@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
@@ -10,8 +10,15 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN pnpm build 
+ARG EXPO_PUBLIC_API_BASE=http://localhost:3000
+ENV EXPO_PUBLIC_API_BASE=$EXPO_PUBLIC_API_BASE
 
-EXPOSE 8080
+RUN pnpm build:web
 
-CMD ["pnpm", "exec", "expo", "start", "--web", "--host", "lan", "--port", "8080"]
+FROM nginx:1.27-alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
